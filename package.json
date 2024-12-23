@@ -20,7 +20,7 @@
     "electron-store": "^10.0.0",
     "eventsource": "^3.0.1",
     "node-record-lpcm16": "^1.0.1",
-    "openai": "^4.76.0",
+    "openai": "^4.77.0",
     "play-sound": "^1.1.6",
     "qrcode": "^1.5.4"
   }
