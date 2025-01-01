@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron . --trace-warnings"
   },
-  "author": "mcjk & pingwinek",
+  "author": "77",
   "license": "ISC",
   "description": "Apollo is an advanced AI voice assistant with a beautiful UI and various integrations.",
   "dependencies": {

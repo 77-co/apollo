@@ -128,24 +128,24 @@ input:checked+.toggle-slider:before {
     box-shadow: none;
 }
 
-.setting-row:has(.scan-list) {
+.setting-row:has(.scan-list), .setting-row:has(.link-list) {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
 }
 
-.scan-list {
+.scan-list, .link-list {
     display: flex;
     flex-direction: column;
     gap: .8rem;
 }
 
-.scan-list .el {
+.scan-list .el, .link-list .el {
     background-color: var(--theme-bg-3);
     border-radius: .6rem;
     padding: .8rem 1rem;
     display: flex;
-    align-items: center;
+    /* align-items: center; */
     gap: .8rem;
     transition: color 0.3s, background-color 0.3s;
 }
@@ -171,8 +171,29 @@ input:checked+.toggle-slider:before {
     font-size: 1.5rem;
 }
 
-.scan-list .footer {
+.scan-list .footer,
+.link-list .footer {
     text-align: center;
     margin: .4rem 0;
     margin-bottom: 0;
+}
+
+.link-list .el {
+    padding: .8rem .6rem
+}
+
+.link-list .el div {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.4rem;
+}
+
+.link-list .el span:first-child {
+    font-weight: 600;
+}
+
+.link-list .el span:last-child {
+    font-weight: 300;
+    font-size: 0.8rem;
 }
