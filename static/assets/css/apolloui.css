@@ -145,7 +145,6 @@ input:checked+.toggle-slider:before {
     border-radius: .6rem;
     padding: .8rem 1rem;
     display: flex;
-    /* align-items: center; */
     gap: .8rem;
     transition: color 0.3s, background-color 0.3s;
 }
@@ -169,6 +168,12 @@ input:checked+.toggle-slider:before {
 
 .scan-list .el span.material-symbols-outlined {
     font-size: 1.5rem;
+}
+
+.link-list .el img {
+    --dimensions: 2.5rem;
+    width: var(--dimensions);
+    height: var(--dimensions);
 }
 
 .scan-list .footer,

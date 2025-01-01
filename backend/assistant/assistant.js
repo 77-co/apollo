@@ -13,7 +13,10 @@ Provide helpful, accurate, and thoughtful responses in a concise, friendly, and 
 Your replies will be fully spoken, so avoid formatting or text-based data, and use verbal representations for numbers.
 User messages are converted through a speech-to-text model and they won\'t contain punctuation or capitalisation.
 You will answer exclusively in Polish. Your answers will be spoken, so do not use formatting etc.
+You will receive user input separated in quotes from some useful information passed automatically.
 `;
+
+const formatMessage = (message) => `User input: "${message}"\nCurrent date: ${new Date()}`;
 
 export default class Assistant {
     constructor(apiKey) {
@@ -115,6 +118,8 @@ export default class Assistant {
 
     async sendMessage(message, conversationId = null, options = {}) {
         try {
+            message = formatMessage(message);
+
             let messages = this.conversations.get(conversationId) || [this.systemMessage];
             messages.push({ role: 'user', content: message });
 
@@ -232,6 +237,8 @@ export default class Assistant {
     }
     async streamMessage(message, onChunk, conversationId = null, options = {}) {
         try {
+            message = formatMessage(message);
+
             let messages = this.conversations.get(conversationId) || [this.systemMessage];
             messages.push({ role: 'user', content: message });
     
