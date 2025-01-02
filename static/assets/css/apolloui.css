@@ -43,6 +43,11 @@
     opacity: 0.9;
 }
 
+.button.danger {
+    background-color: var(--danger-bg-1);
+    color: var(--danger-fg-1);
+}
+
 /* Toggle Switch */
 .toggle-switch {
     position: relative;
@@ -140,13 +145,15 @@ input:checked+.toggle-slider:before {
     gap: .8rem;
 }
 
-.scan-list .el, .link-list .el {
+.link-list .el,
+.scan-list .el {
     background-color: var(--theme-bg-3);
     border-radius: .6rem;
     padding: .8rem 1rem;
-    display: flex;
-    gap: .8rem;
     transition: color 0.3s, background-color 0.3s;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
 }
 
 @keyframes ActiveAnim {
@@ -176,8 +183,7 @@ input:checked+.toggle-slider:before {
     height: var(--dimensions);
 }
 
-.scan-list .footer,
-.link-list .footer {
+.scan-list .footer {
     text-align: center;
     margin: .4rem 0;
     margin-bottom: 0;
@@ -198,7 +204,12 @@ input:checked+.toggle-slider:before {
     font-weight: 600;
 }
 
-.link-list .el span:last-child {
+.link-list .el span:last-child{
+    margin: 0;
     font-weight: 300;
     font-size: 0.8rem;
+}
+
+.link-list .el button {
+    margin-left: auto;
 }

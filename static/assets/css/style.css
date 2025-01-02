@@ -28,6 +28,9 @@
     --active-bg-1: rgb(56, 102, 255);
     --active-fg-1: rgb(255, 255, 255);
 
+    --danger-bg-1: rgb(255, 56, 103);
+    --danger-fg-1: rgb(255, 255, 255);
+
     --magic-theme: linear-gradient(to right, #9d65ff, #4197ff);
 
     --theme-fg-1: rgb(0, 0, 0);
