@@ -170,6 +170,10 @@
     animation: marquee 8s linear infinite;
 }
 
+#spotify .meta.paused span .text.animate {
+    animation: none;
+}
+
 #spotify .controls {
     flex: 1;
     display: flex;

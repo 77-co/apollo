@@ -47,7 +47,7 @@ class SpotifyWidget {
         this.animations.newSongIn = {
             targets: [this.titleSpan, this.authorSpan, this.albumArt],
             opacity: [0, 1],
-            translateX: [-20, 0],
+            translateX: [25, 0],
             duration: 150,
             easing: 'easeOutSine'
         };
@@ -55,7 +55,7 @@ class SpotifyWidget {
         this.animations.oldSongOut = {
             targets: [this.titleSpan, this.authorSpan, this.albumArt],
             opacity: [1, 0],
-            translateX: [0, 20],
+            translateX: [0, -25],
             duration: 150,
             easing: 'easeInSine'
         };
@@ -215,6 +215,7 @@ class SpotifyWidget {
     }
 
     nextTrackFadeout() {
+        $('#spotify .meta').addClass('paused');
         anime(this.animations.oldSongOut);
     }
 
@@ -284,6 +285,7 @@ class SpotifyWidget {
         anime({
             complete: () => {
                 updateScrollWidth();
+                $('#spotify .meta').removeClass('paused');
             },
             ...this.animations.newSongIn
         });
