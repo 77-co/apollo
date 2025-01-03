@@ -24,6 +24,7 @@ let AssistantService = null;
 let SpotifyService = null;
 
 export function setup(mainWindow) {
+    // Misc
     ipcMain.handle('misc-set-dark-theme', (event, darkTheme) => 
         store.set('misc.darkTheme', darkTheme === 1)
     );
@@ -45,6 +46,8 @@ export function setup(mainWindow) {
         keywordPaths,
         sensitivities
     );
+
+    // Assistant (AI + wake word) integration
 
     const record = new Record(porcupine);
     ipcMain.handle('initialize-assistant', async (event) => {
@@ -126,6 +129,8 @@ export function setup(mainWindow) {
         return await AssistantService.listModels();
     });
 
+    // Weather integration
+
     ipcMain.handle('get-weather', async (event, params) => {
         try {
             const weatherData = await WeatherPlugin.execute(params);
@@ -187,6 +192,8 @@ export function setup(mainWindow) {
             };
         }
     });
+
+    // Spotify integration
 
     ipcMain.handle('initialize-spotify', async (event, config) => {
         const forwardEvent = (event, data) => {
@@ -376,6 +383,115 @@ export function setup(mainWindow) {
         return await handleSpotifyCall(() => SpotifyService.addToQueue(uri));
     });
 
+    // Google Calendar integration
+
+    let CalendarService = null;
+
+    ipcMain.handle('initialize-calendar', async (event, config) => {
+        const forwardEvent = (event, data) => {
+            if (mainWindow?.webContents) {
+                mainWindow.webContents.send('calendar-event', { event, data });
+            }
+        };
+
+        try {
+            if (CalendarService) {
+                CalendarService.destroy();
+            }
+
+            CalendarService = new GoogleCalendarClient(config);
+            
+            CalendarService.on('authInitialized', (data) => {
+                forwardEvent('authInitialized', data);
+            });
+            
+            CalendarService.on('authUrlVisited', () => {
+                forwardEvent('authUrlVisited');
+            });
+
+            CalendarService.on('authenticated', (data) => {
+                forwardEvent('authenticated', data);
+            });
+
+            CalendarService.on('tokenRefreshed', (data) => {
+                forwardEvent('tokenRefreshed', data);
+            });
+
+            CalendarService.on('ready', (data) => {
+                forwardEvent('ready', data);
+            });
+
+            CalendarService.on('error', (error) => {
+                forwardEvent('error', error.message);
+            });
+            
+            const result = await CalendarService.initialize();
+            return { success: true, ...result };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    });
+
+    const handleCalendarCall = async (operation) => {
+        try {
+            // Check auth status
+            if (!CalendarService?.isAuthenticated) {
+                throw new Error('Calendar client not authenticated');
+            }
+
+            const result = await operation();
+            return { success: true, ...(result && { result }) };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    };
+
+    ipcMain.handle('calendar-destroy', () => {
+        if (CalendarService) {
+            CalendarService.destroy();
+            CalendarService = null;
+        }
+        return { success: true };
+    });
+
+    ipcMain.handle('calendar-get-events', async (event, calendarId, options) => {
+        return await handleCalendarCall(() => CalendarService.getEvents(calendarId, options));
+    });
+
+    ipcMain.handle('calendar-create-event', async (event, calendarId, eventData) => {
+        return await handleCalendarCall(() => CalendarService.createEvent(calendarId, eventData));
+    });
+
+    ipcMain.handle('calendar-update-event', async (event, calendarId, eventId, eventData) => {
+        return await handleCalendarCall(() => CalendarService.updateEvent(calendarId, eventId, eventData));
+    });
+
+    ipcMain.handle('calendar-delete-event', async (event, calendarId, eventId) => {
+        return await handleCalendarCall(() => CalendarService.deleteEvent(calendarId, eventId));
+    });
+
+    ipcMain.handle('calendar-get-calendars', async () => {
+        return await handleCalendarCall(() => CalendarService.getCalendarList());
+    });
+
+    ipcMain.handle('calendar-get-calendar', async (event, calendarId) => {
+        return await handleCalendarCall(() => CalendarService.getCalendarById(calendarId));
+    });
+
+    ipcMain.handle('calendar-create-calendar', async (event, calendarData) => {
+        return await handleCalendarCall(() => CalendarService.createCalendar(calendarData));
+    });
+
+    ipcMain.handle('calendar-update-calendar', async (event, calendarId, calendarData) => {
+        return await handleCalendarCall(() => CalendarService.updateCalendar(calendarId, calendarData));
+    });
+
+    ipcMain.handle('calendar-delete-calendar', async (event, calendarId) => {
+        return await handleCalendarCall(() => CalendarService.deleteCalendar(calendarId));
+    });
+
+    // TTS integration
+
     ipcMain.handle('speech-transcribe-stream', async (event) => {
         const forwardEvent = (event, data) => {
             if (mainWindow?.webContents) {
@@ -398,11 +514,15 @@ export function setup(mainWindow) {
         synthesise(text, voice);
     });
 
+    // Settings handling
+
     ipcMain.handle('setting-set', async (event, key, value) => 
         settings.set(key, value));
 
     ipcMain.handle('setting-get', async (event, key) =>
         settings.get(key));
+
+    // Memos integration
 
     ipcMain.handle('memo-create', async (event, title, value) =>
         memos.createNote(title, value));

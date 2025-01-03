@@ -19,7 +19,7 @@ export class SpotifyClient extends EventEmitter {
             autoSelectDevice: config.autoSelectDevice !== false
         };
 
-        const integration = getIntegrations().spotify || {};
+        const integration = getIntegrations().spotify;
         this.accessToken = integration?.accessToken;
         this.refreshToken = integration?.refreshToken;
         this.expiresAt = integration?.expiresAt;
