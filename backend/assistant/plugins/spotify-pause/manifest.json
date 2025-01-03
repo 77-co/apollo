@@ -1,0 +1,4 @@
+{
+    "name": "spotifyPause",
+    "description": "Pauses the currently playing track on Spotify, or does nothing if it's already paused."
+}

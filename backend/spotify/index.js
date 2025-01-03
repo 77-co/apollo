@@ -3,10 +3,10 @@ import EventEmitter from 'events';
 import QRCode from 'qrcode';
 import 'dotenv/config';
 import { EventSource } from 'eventsource';
-import Store from 'electron-store'
+import Store from 'electron-store';
+import { getIntegrations, setIntegration } from '../link/link.js';
 
 const store = new Store();
-console.log(store.path);
 
 export class SpotifyClient extends EventEmitter {
     constructor(config = {}) {
@@ -18,10 +18,11 @@ export class SpotifyClient extends EventEmitter {
             tokenRefreshPadding: config.tokenRefreshPadding || 60,
             autoSelectDevice: config.autoSelectDevice !== false
         };
-        
-        this.accessToken = store.get('spotify.accessToken');
-        this.refreshToken = store.get('spotify.refreshToken');
-        this.expiresAt = store.get('spotify.expiresAt');
+
+        const integration = getIntegrations().spotify || {};
+        this.accessToken = integration?.accessToken;
+        this.refreshToken = integration?.refreshToken;
+        this.expiresAt = integration?.expiresAt;
         this.deviceId = store.get('spotify.deviceId');
         this.refreshTimeout = null;
         this.eventSource = null;
@@ -90,9 +91,11 @@ export class SpotifyClient extends EventEmitter {
             this.expiresAt = Date.now() + (tokens.expires_in * 1000);
         }
 
-        store.set('spotify.accessToken', this.accessToken);
-        store.set('spotify.refreshToken', this.refreshToken);
-        store.set('spotify.expiresAt', this.expiresAt);
+        setIntegration('spotify', {
+            accessToken: this.accessToken,
+            refreshToken: this.refreshToken,
+            expiresAt: this.expiresAt
+        });
 
         if (this.config.autoRefresh) {
             this._scheduleTokenRefresh();
