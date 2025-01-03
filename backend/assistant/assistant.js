@@ -322,7 +322,6 @@ export default class Assistant {
                         toolCall: { ...currentToolCall },
                         done: false
                     });
-                    console.log(currentToolCall);
                     currentToolCall = null;
                     functionBuffer = { name: '', arguments: '' };
                 }
