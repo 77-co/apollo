@@ -5,7 +5,7 @@ import axios from 'axios';
 import { EventSource } from 'eventsource';
 import { getIntegrations, setIntegration } from '../link/link.js';
 
-export class GoogleCalendarClient extends EventEmitter {
+export default class GoogleCalendarClient extends EventEmitter {
     constructor(config = {}) {
         super();
         this.config = {

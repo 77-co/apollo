@@ -190,15 +190,6 @@
                         </div>
                     </div>
                     <div class="category" id="spotifySettings">
-                        <div class="spotifyLoginAlert active">
-                            <div class="qrBlur" id="spotifyQrBlur">
-                                <span>Kontynuuj logowanie na telefonie</span>
-                                <button onclick="$(this).parent().removeClass('active')">Pokaż kod QR</button>
-                            </div>
-                            <p>Aby korzystać z integracji Spotify, musisz podłączyć swoje konto Spotify. W tym celu zeskanuj
-                                poniższy kod QR telefonem.</p>
-                            <img src="" id="spotifyLoginQRCode">
-                        </div>
                         <div class="spotifyDeviceAlert active">
                             <p>Aby sterować odtwarzaniem Spotify, musisz uruchomić odtwarzanie na jakimś urządzeniu.</p>
                         </div>
@@ -206,6 +197,15 @@
                         <p>Jeśli to widzisz to znaczy, że pomyślnie udało ci się połączyć konto Spotify!</p>
                     </div>
                     <div class="category" id="linkSettings">
+                        <div class="linkLoginAlert" id="linkLoginAlert">
+                            <div class="qrBlur" id="linkQrBlur">
+                                <span>Kontynuuj logowanie na telefonie</span>
+                                <button onclick="$(this).parent().removeClass('active')">Pokaż kod QR</button>
+                            </div>
+                            <p>Zeskanuj poniższy kod komórką, aby połączyć konto.</p>
+                            <img src="" id="linkLoginQRCode">
+                        </div>
+
                         <div class="setting-row">
                             <div class="setting-text">
                                 <h3 class="setting-title">Integracje</h3>
@@ -219,8 +219,8 @@
                                         <span class="title">Spotify</span>
                                         <span>Sterowanie graficzne i głosowe muzyką</span>
                                     </div>
-                                    <button class="button danger">
-                                        Rozłącz
+                                    <button class="button" id="spotifyLinkButton" onclick="integrationHandle('spotify')">
+                                        Połącz
                                     </button>
                                 </div>
                                 <div class="el active">
@@ -229,7 +229,7 @@
                                         <span class="title">Google</span>
                                         <span>Kalendarz</span>
                                     </div>
-                                    <button class="button">
+                                    <button class="button" id="googleLinkButton" onclick="integrationHandle('google')">
                                         Połącz
                                     </button>
                                 </div>
@@ -440,10 +440,13 @@
     <script src="./assets/js/apps.js"></script>
     <script src="./assets/js/screensaver.js"></script>
 
+    <script src="./assets/js/services/link.js"></script>
     <script src="./assets/js/services/time.js"></script>
     <script src="./assets/js/services/weather.js"></script>
     <script src="./assets/js/services/settings.js"></script>
-    <script src="./assets/js/services/spotify.js"></script>
     <script src="./assets/js/services/assistant.js"></script>
     <script src="./assets/js/services/memos.js"></script>
+
+    <script src="./assets/js/services/spotify.js"></script>
+    <script src="./assets/js/services/calendar.js"></script>
 </body>

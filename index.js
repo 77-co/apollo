@@ -6,6 +6,7 @@ import 'dotenv/config';
 import Store from 'electron-store';
 
 const store = new Store();
+console.log(store.path);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

@@ -117,6 +117,22 @@ const SpotifyService = {
     addToQueue: (uri) => ipcRenderer.invoke('spotify-add-to-queue', uri)
 };
 
+const CalendarService = {
+    initialize: (config) => {
+        ipcRenderer.on('calendar-event', (_, { event, data }) => {
+            window.dispatchEvent(new CustomEvent('calendar-event', {
+                detail: { event, data }
+            }));
+        });
+        return ipcRenderer.invoke('initialize-calendar', config);
+    },
+
+    destroy: () => {
+        ipcRenderer.removeAllListeners('calendar-event');
+        return ipcRenderer.invoke('calendar-destroy');
+    },
+};
+
 const SpeechService = {
     transcribeStream: () => 
         ipcRenderer.invoke('speech-transcribe-stream'),
@@ -152,8 +168,10 @@ const misc = {
 contextBridge.exposeInMainWorld('backend', {
     assistant: AssistantService,
     weather: WeatherService,
-    spotify: SpotifyService,
     speech: SpeechService,
     settings,
-    memos
+    memos,
+
+    spotify: SpotifyService,
+    google: CalendarService,
 });

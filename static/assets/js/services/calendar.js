@@ -1,18 +1,19 @@
 class Calendar {
     constructor() {
-        this.initializeSpotify();
+        this.integration = new Integration('google');
+        this.initializeGoogle();
         this.setupEventListeners();
-        this.setupAnimations();
+        // this.setupAnimations();
     }
 
-    async initializeSpotify() {
+    async initializeGoogle() {
         try {
-            const result = await window.backend.spotify.initialize();
+            const result = await window.backend.google.initialize();
             if (!result.success) {
-                console.error('Spotify initialization failed:', result.error);
+                console.error('Google Calendar initialization failed:', result.error);
             }
         } catch (error) {
-            console.error('Failed to initialize Spotify:', error);
+            console.error('Failed to initialize Google Calendar:', error);
         }
     }
 
@@ -23,33 +24,30 @@ class Calendar {
             switch (event) {
                 case 'authInitialized':
                     if (data.qrCode) {
-                        $('#spotifyLoginQRCode').attr('src', data.qrCode);
-                        $('.spotifyLoginAlert').addClass('active');
+                        integrations['google'].qrcode = data.qrCode;
                     }
                     break;
 
                 case 'authUrlVisited':
-                    $('#spotifyQrBlur').addClass('active');
+                    this.integration.confirmLogin();
                     break;
 
                 case 'authenticated':
-                    $('.spotifyLoginAlert').removeClass('active');
+                    this.integration.finaliseLogin();
                     break;
 
                 case 'ready':
-                    console.log('Spotify ready, checking for devices...');
-                    await this.checkAndPollForDevices();
-                    break;
-
-                case 'deviceSelected':
-                    console.log('Device selected:', data.deviceId);
-                    this.startTrackUpdates();
+                    console.log('Google ready.');
                     break;
 
                 case 'error':
-                    console.error('Spotify error:', data);
+                    console.error('Google error:', data);
                     break;
             }
         });
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.calendar = new Calendar();
+});

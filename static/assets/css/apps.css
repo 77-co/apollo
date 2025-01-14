@@ -177,7 +177,7 @@
     display: none;
 }
 
-#settings #spotifySettings .spotifyLoginAlert,
+#settings #linkSettings .linkLoginAlert,
 #settings #spotifySettings .spotifyDeviceAlert {
     position: absolute;
     width: 100%;
@@ -200,24 +200,24 @@
     z-index: 2;
 }
 
-.spotifyLoginAlert,
+.linkLoginAlert,
 .spotifyDeviceAlert {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
 }
 
-.spotifyLoginAlert.active,
+.linkLoginAlert.active,
 .spotifyDeviceAlert.active {
     opacity: 1;
     pointer-events: initial;
 }
 
-#spotifyLoginQRCode {
+#linkLoginQRCode {
     width: 15rem;
 }
 
-#settings #spotifySettings .qrBlur {
+#settings #linkSettings .qrBlur {
     position: absolute;
     backdrop-filter: blur(10px);
     width: 100%;
@@ -238,18 +238,18 @@
     transition: opacity 0.5s;
 }
 
-#settings #spotifySettings .qrBlur span {
+#settings #linkSettings .qrBlur span {
     font-weight: 600;
     font-size: 1.5rem;
 
 }
 
-#settings #spotifySettings .qrBlur.active {
+#settings #linkSettings .qrBlur.active {
     opacity: 1;
     pointer-events: initial;
 }
 
-#settings #spotifySettings .qrBlur button {
+#settings #linkSettings .qrBlur button {
     border-radius: .5rem;
     background-color: var(--theme-bg-2);
     color: var(--theme-fg-1);

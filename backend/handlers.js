@@ -1,7 +1,6 @@
 import { ipcMain } from 'electron';
 import Assistant from './assistant/assistant.js';
 import WeatherPlugin from './assistant/plugins/weather/index.js';
-import { SpotifyClient } from './spotify/index.js';
 import 'dotenv/config';
 import Store from 'electron-store';
 import fs from 'node:fs';
@@ -16,12 +15,16 @@ import { transcribeStream, synthesise } from './speech.js';
 import settings from './settings/settings.js';
 import memos from './memos/index.js';
 
+import { SpotifyClient } from './spotify/index.js';
+import GoogleCalendarClient from './google-calendar/index.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const store = new Store();
 
 let AssistantService = null;
 let SpotifyService = null;
+let CalendarService = null;
 
 export function setup(mainWindow) {
     // Misc
@@ -384,8 +387,6 @@ export function setup(mainWindow) {
     });
 
     // Google Calendar integration
-
-    let CalendarService = null;
 
     ipcMain.handle('initialize-calendar', async (event, config) => {
         const forwardEvent = (event, data) => {

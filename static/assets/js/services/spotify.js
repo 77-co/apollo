@@ -1,5 +1,7 @@
 class SpotifyWidget {
     constructor() {
+        this.integration = new Integration('spotify');
+
         this.widget = document.getElementById('spotify');
         this.albumArt = this.widget.querySelector('img');
         this.titleSpan = this.widget.querySelector('.title .text');
@@ -79,17 +81,16 @@ class SpotifyWidget {
             switch (event) {
                 case 'authInitialized':
                     if (data.qrCode) {
-                        $('#spotifyLoginQRCode').attr('src', data.qrCode);
-                        $('.spotifyLoginAlert').addClass('active');
+                        integrations['spotify'].qrcode = data.qrCode;
                     }
                     break;
 
                 case 'authUrlVisited':
-                    $('#spotifyQrBlur').addClass('active');
+                    this.integration.confirmLogin();
                     break;
 
                 case 'authenticated':
-                    $('.spotifyLoginAlert').removeClass('active');
+                    this.integration.finaliseLogin();
                     break;
 
                 case 'ready':
