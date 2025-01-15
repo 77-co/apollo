@@ -5,16 +5,32 @@ const integrations = {
 let activeIntegrationLogin = '';
 
 class Integration {
-    constructor(integrationName) {
+    constructor(integrationName, unlinkHandler = () => undefined) {
         this.integrationName = integrationName;
+        this._unlinkHandler = unlinkHandler;
+
+        const button = document.getElementById(`${integrationName}LinkButton`);
+        if (button) button.addEventListener('click', () => this._buttonHandler(this));
+    }
+
+    // In this function we need to replace 'this' with an argument, because when using it as a handler, this could be overwritten by the element it's linked to.
+    _buttonHandler(classObject) {
+        if (integrations[classObject.integrationName]?.active) {
+            // handle unlinking integration
+            classObject.unlinkIntegration();
+            return;
+        }
+
+        console.log(integrations);
+
+        activeIntegrationLogin = classObject.integrationName;
+        $('#linkLoginQRCode').attr('src', integrations[classObject.integrationName]?.qrcode);
+        $('#linkLoginAlert').addClass('active');
     }
 
     unlinkIntegration() {
         this._integrationLoggedInSet(false);
-    }
-
-    onIntegrationUnlink(callback) {
-
+        this._unlinkHandler();
     }
 
     _integrationLoggedInSet(value) {
@@ -40,18 +56,6 @@ class Integration {
             $('#linkLoginAlert').removeClass('active');
         this._integrationLoggedInSet(true);
     }
-}
-
-function integrationHandle(integrationName) {
-    if (integrations[integrationName].active) {
-        // handle unlinking integration
-        return
-    }
-
-    activeIntegrationLogin = integrationName;
-
-    $('#linkLoginQRCode').attr('src', integrations[integrationName]?.qrcode);
-    $('#linkLoginAlert').addClass('active');
 }
 
 

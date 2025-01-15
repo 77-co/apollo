@@ -54,7 +54,6 @@ export class SpotifyClient extends EventEmitter {
 
             return new Promise((resolve, reject) => {
                 this.eventSource.onmessage = async (event) => {
-                    console.log(event);
                     const data = JSON.parse(event.data);
                     
                     if (data.status === 'keep-alive') return;

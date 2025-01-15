@@ -1,6 +1,8 @@
 class Calendar {
     constructor() {
-        this.integration = new Integration('google');
+        this.integration = new Integration('google', () => {
+            // Handle logging out (unlinking account)
+        });
         this.initializeGoogle();
         this.setupEventListeners();
         // this.setupAnimations();

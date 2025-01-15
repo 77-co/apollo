@@ -1,6 +1,8 @@
 class SpotifyWidget {
     constructor() {
-        this.integration = new Integration('spotify');
+        this.integration = new Integration('spotify', () => {
+            // Handle logging out (unlinking account)
+        });
 
         this.widget = document.getElementById('spotify');
         this.albumArt = this.widget.querySelector('img');
@@ -80,6 +82,7 @@ class SpotifyWidget {
             
             switch (event) {
                 case 'authInitialized':
+                    console.log('initalisedauth', data)
                     if (data.qrCode) {
                         integrations['spotify'].qrcode = data.qrCode;
                     }
@@ -95,6 +98,7 @@ class SpotifyWidget {
 
                 case 'ready':
                     console.log('Spotify ready, checking for devices...');
+                    this.integration.finaliseLogin();
                     await this.checkAndPollForDevices();
                     break;
 
