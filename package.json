@@ -12,7 +12,7 @@
   "description": "Apollo is an advanced AI voice assistant with a beautiful UI and various integrations.",
   "dependencies": {
     "@google-cloud/speech": "^6.7.0",
-    "@picovoice/porcupine-node": "^3.0.4",
+    "@picovoice/porcupine-node": "^3.0.5",
     "axios": "^1.7.9",
     "cheerio": "^1.0.0",
     "dotenv": "^16.4.7",
