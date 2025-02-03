@@ -21,7 +21,7 @@
     "eventsource": "^3.0.2",
     "googleapis": "^144.0.0",
     "node-record-lpcm16": "^1.0.1",
-    "openai": "^4.79.1",
+    "openai": "^4.82.0",
     "play-sound": "^1.1.6",
     "qrcode": "^1.5.4"
   }
