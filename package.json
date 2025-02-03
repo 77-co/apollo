@@ -16,7 +16,7 @@
     "axios": "^1.7.9",
     "cheerio": "^1.0.0",
     "dotenv": "^16.4.7",
-    "electron": "^34.0.0",
+    "electron": "^34.0.2",
     "electron-store": "^10.0.0",
     "eventsource": "^3.0.2",
     "googleapis": "^144.0.0",
