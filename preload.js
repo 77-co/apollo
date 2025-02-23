@@ -165,6 +165,17 @@ const misc = {
         ipcRenderer.invoke('misc-get-dark-theme'),
 };
 
+const system = { 
+    wifi: {
+        connect: (ssid, password) =>
+            ipcRenderer.invoke('wifi-connect', ssid, password),
+        disconnect: () =>
+            ipcRenderer.invoke('wifi-disconnect'),
+        listNetworks: () =>
+            ipcRenderer.invoke('wifi-list-networks'),
+    },
+};
+
 contextBridge.exposeInMainWorld('backend', {
     assistant: AssistantService,
     weather: WeatherService,
@@ -174,4 +185,5 @@ contextBridge.exposeInMainWorld('backend', {
 
     spotify: SpotifyService,
     google: CalendarService,
+    system: system,
 });

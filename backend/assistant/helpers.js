@@ -8,4 +8,4 @@ export async function emulateInvoke(channel, ...args) {
 
     // `null` represents the `event` in the actual handler
     return handler(null, ...args);
-}
+} 

@@ -4,6 +4,10 @@ import { setup } from './backend/handlers.js';
 import { app, BrowserWindow } from 'electron';
 import 'dotenv/config';
 import Store from 'electron-store';
+import { platform } from 'os';
+
+
+console.log("Detected platform: " + platform());
 
 const store = new Store();
 console.log(store.path);
@@ -24,7 +28,8 @@ app.whenReady().then(() => {
     const win = new BrowserWindow({
         width: 800,
         height: 480,
-        resizable: false,
+        // We want resizing for development (TRUST ME)
+        resizable: process.env.NODE_ENV === 'production' ? false : true,
         backgroundColor: store.get('misc.darkTheme') ? '#131313' : '#ffffff',
         // If Node is running in production environment, launch the window in kiosk mode.
         kiosk: process.env.NODE_ENV === 'production',

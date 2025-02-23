@@ -18,6 +18,8 @@ import memos from './memos/index.js';
 import { SpotifyClient } from './spotify/index.js';
 import GoogleCalendarClient from './google-calendar/index.js';
 
+import { WiFiManager } from './os/wifi.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const store = new Store();
@@ -27,6 +29,38 @@ let SpotifyService = null;
 let CalendarService = null;
 
 export function setup(mainWindow) {
+
+    // OS 
+
+    const wifiManager = new WiFiManager();
+    ipcMain.handle('wifi-list-networks', async () => {
+        try {
+          return await wifiManager.listNetworks();
+        } catch (error) {
+          throw new Error('Failed to list networks: ' + error.message);
+        }
+      });
+      
+      ipcMain.handle('wifi-connect', async (event, ssid, password) => {
+        try {
+        
+          const result = await wifiManager.connect(ssid, password);
+
+          return result;
+        } catch (error) {
+          throw new Error('Failed to connect to network: ' + error.message);
+        }
+      });
+      
+      ipcMain.handle('wifi-status', async () => {
+        try {
+          const status = await wifiManager.status();
+          return status;
+        } catch (error) {
+          throw new Error('Failed to get WiFi status: ' + error.message);
+        }
+      });
+
     // Misc
     ipcMain.handle('misc-set-dark-theme', (event, darkTheme) => 
         store.set('misc.darkTheme', darkTheme === 1)
