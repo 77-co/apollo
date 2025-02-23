@@ -56,24 +56,37 @@ export default {
         return;
       }
 
+      console.log('Executing mobidziennik script...');
+
       const pythonScript = path.join(__dirname, 'mobi.py');
+      
       const python = spawn(process.platform === 'win32' ? 'python' : 'python3', [
         pythonScript,
         '-u', USERNAME,
         '-p', PASSWORD
-      ]);
-
+      ], {
+        encoding: 'utf-8'
+      });
+      
       let outputData = '';
       let errorData = '';
-
+      
+      const WEEKDAYS = [
+        'poniedziałek', 
+        'wtorek', 
+        'środa', 
+        'czwartek', 
+        'piątek'
+      ];
+      
       python.stdout.on('data', (data) => {
-        outputData += data.toString();
+        outputData += data.toString('utf-8');
       });
-
+      
       python.stderr.on('data', (data) => {
-        errorData += data.toString();
+        errorData += data.toString('utf-8');
       });
-
+      
       python.on('close', (code) => {
         if (code !== 0) {
           try {
@@ -84,20 +97,49 @@ export default {
           }
           return;
         }
-
+      
         try {
-          const schedule = JSON.parse(outputData);
+          function decodePolishChars(text) {
+            const replacements = {
+              '─Ö': 'ę', '─│': 'ą', '─Ď': 'ś', '─Ź': 'ż', 
+              '─╗': 'ł', '─Ż': 'ń', '─╝': 'ó', '─Ą': 'Ę', 
+              '─Ä': 'Ą', '┼Ü': 'Ś', '┼╗': 'Ż', '┼Ü': 'Ł', 
+              '┼╝': 'Ń', '─│': 'ó'
+            };
+      
+            return text.replace(/─Ö|─│|─Ď|─Ź|─╗|─Ż|─╝|─Ą|─Ä|┼Ü|┼╗|┼Ü|┼╝|─│/g, 
+              match => replacements[match] || match);
+          }
+      
+          function deepDecode(obj) {
+            if (typeof obj === 'string') {
+              return decodePolishChars(obj);
+            }
+            if (Array.isArray(obj)) {
+              return obj.map(deepDecode);
+            }
+            if (obj !== null && typeof obj === 'object') {
+              return Object.fromEntries(
+                Object.entries(obj).map(([key, value]) => [key, deepDecode(value)])
+              );
+            }
+            return obj;
+          }
+      
+          let fullSchedule = JSON.parse(outputData);
+          const decodedSchedule = deepDecode(fullSchedule);
           const targetWeekday = WEEKDAYS[weekday];
-          
+          const filteredSchedule = decodedSchedule[targetWeekday] || [];      
           resolve({
             date: targetDate.toISOString().split('T')[0],
-            weekday: targetWeekday,
-            schedule: schedule[targetWeekday] || []
+            schedule: filteredSchedule
           });
+      
         } catch (error) {
           reject(new Error(`Failed to parse schedule output: ${error.message}`));
         }
       });
+      
     });
   }
 };

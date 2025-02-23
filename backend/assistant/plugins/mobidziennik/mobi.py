@@ -1,12 +1,18 @@
-#!/usr/bin/env python3
 import argparse
 import sys
 import json
+import locale
+import codecs
+
 from typing import Dict, List, Optional
 import requests
 from bs4 import BeautifulSoup
 import re
 from dataclasses import dataclass, asdict
+
+sys.stdin.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
 
 @dataclass
 class Lesson:
@@ -30,7 +36,7 @@ class MobiClient:
         "11:00": 5, "11:55": 6, "13:00": 7, "14:05": 8,
         "15:00": 9, "15:55": 10, "16:45": 11, "17:35": 12,
         "18:25": 13, "19:15": 14, "20:05": 15
-    }
+}
     
     def __init__(self, username: str, password: str):
         self.session = requests.Session()
