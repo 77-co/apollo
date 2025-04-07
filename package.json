@@ -11,7 +11,7 @@
   "license": "ISC",
   "description": "Apollo is an advanced AI voice assistant with a beautiful UI and various integrations.",
   "dependencies": {
-    "@google-cloud/speech": "^6.7.1",
+    "@google-cloud/speech": "^7.0.1",
     "@picovoice/porcupine-node": "^3.0.6",
     "axios": "^1.8.4",
     "cheerio": "^1.0.0",
