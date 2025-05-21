@@ -18,7 +18,7 @@
     "dotenv": "^16.5.0",
     "electron": "^36.2.0",
     "electron-store": "^10.0.1",
-    "eventsource": "^3.0.7",
+    "eventsource": "^4.0.0",
     "googleapis": "^148.0.0",
     "node-record-lpcm16": "^1.0.1",
     "openai": "^4.100.0",
