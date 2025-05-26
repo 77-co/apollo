@@ -19,7 +19,7 @@
     "electron": "^36.2.1",
     "electron-store": "^10.0.1",
     "eventsource": "^4.0.0",
-    "googleapis": "^148.0.0",
+    "googleapis": "^149.0.0",
     "node-record-lpcm16": "^1.0.1",
     "openai": "^4.100.0",
     "play-sound": "^1.1.6",
