@@ -12,7 +12,7 @@ export class SpotifyClient extends EventEmitter {
     constructor(config = {}) {
         super();
         this.config = {
-            authServerUrl: config.authServerUrl || 'https://apollo-api.mcjk.cc/spotify',
+            authServerUrl: config.authServerUrl || `${process.env.API_BASE_URL}/spotify`,
             autoRefresh: config.autoRefresh !== false,
             refreshThreshold: config.refreshThreshold || 300,
             tokenRefreshPadding: config.tokenRefreshPadding || 60,
