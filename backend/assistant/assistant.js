@@ -137,7 +137,7 @@ export default class Assistant {
 
             const completionOptions = {
                 messages,
-                model: options.model || 'gpt-4o-mini',
+                model: options.model || 'gpt-4.1-nano',
                 temperature: options.temperature || 0.7,
                 max_tokens: options.maxTokens || 9999,
                 presence_penalty: options.presencePenalty || 0,

@@ -42,7 +42,7 @@ function openApp(appId, widget) {
                 openAnimationRunning = false;
             }, 300);
         }, 300);
-    }, 10); // optional delay to trigger the transition
+    }, 20);
 }
 
 // This opens an app through an id
