@@ -15,14 +15,14 @@ MODEL_ID = "apollo"
 MODEL_PATH = rf'./wake/model/{MODEL_ID}.onnx'
 MODEL_PATHS = [MODEL_PATH]
 
-DETECTION_THRESHOLD = 0.3  # Adjusted for better detection
+DETECTION_THRESHOLD = 0.1  # Adjusted for better detection
 SAMPLE_RATE = 16000
 CHANNELS = 1
 AUDIO_DTYPE = 'float32'
 
 # Subprocess communication settings
 HEARTBEAT_INTERVAL = 30  # Send heartbeat every 30 seconds
-CONFIDENCE_REPORT_INTERVAL = 5  # Report confidence levels every 5 seconds
+CONFIDENCE_REPORT_INTERVAL = 1  # Report confidence levels every 5 seconds
 
 class WakeWordDetector:
     def __init__(self):

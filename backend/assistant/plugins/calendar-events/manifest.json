@@ -1,0 +1,4 @@
+{
+    "name": "getCalendarEvents",
+    "description": "Plays the current track on Spotify, or does nothing if it's already playing."
+}
