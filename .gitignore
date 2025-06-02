@@ -134,3 +134,6 @@ dist
 
 # Google Cloud Credentials file
 google-cloud-key.json
+
+# Python Virtual Environments
+.venv/
