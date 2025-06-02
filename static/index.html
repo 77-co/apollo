@@ -121,6 +121,8 @@
             <div class="app" id="settings">
                 <span class="appTitle">Ustawienia</span>
                 <div class="categories">
+                    <span class="category" data-category-id="aiSettings"><span
+                        class="material-symbols-outlined fill">network_intelligence</span>Apollo AI</span>
                     <span class="category" data-category-id="uiSettings"><span
                             class="material-symbols-outlined fill">brush</span>Wygląd</span>
                     <span class="category" data-category-id="speechSettings"><span
@@ -133,6 +135,29 @@
                             class="material-symbols-outlined fill">link</span>Apollo Link</span>
                 </div>
                 <div class="content">
+                    <div class="category" id="aiSettings">
+                        <div class="setting-row">
+                            <div class="setting-text">
+                                <h3 class="setting-title">Tryb realtime</h3>
+                                <p class="setting-description">Prowadź płynną konwersację, bez powtórnych wybudzeń słowem "Apollo" i czekania na odpowiedź.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onclick="setting(this)"
+                                    class="setting" data-setting-key="ai.realtime">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-text">
+                                <h3 class="setting-title">Twoje imię</h3>
+                                <p class="setting-description">Apollo będzie zwracać się do Ciebie osobiście.</p>
+                            </div>
+                            <div class="input-wrapper">
+                                <input type="text" onchange="setting(this)"
+                                    class="setting input" data-setting-key="ai.name">
+                            </div>
+                        </div>
+                    </div>
                     <div class="category" id="uiSettings">
                         <div class="setting-row">
                             <div class="setting-text">
@@ -151,8 +176,7 @@
                         <div class="setting-row">
                             <div class="setting-text">
                                 <h3 class="setting-title">Włącz mowę</h3>
-                                <p class="setting-description">Sprawia, że Apollo będzie wypowiadać swoje odpowiedzi na głos
-                                    przy użyciu głosu AI.</p>
+                                <p class="setting-description">Apollo będzie wypowiadać swoje odpowiedzi na głos.</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" onclick="setting(this)" class="setting"
@@ -163,16 +187,21 @@
                         <div class="setting-row">
                             <div class="setting-text">
                                 <h3 class="setting-title">Głos Apollo</h3>
-                                <p class="setting-description">Możesz zmienić jakiego głosu będzie używać asystent.</p>
+                                <p class="setting-description">Apollo będzie używać poniższego głosu, gdy wypowiadanie na głos jest włączone.</p>
                             </div>
                             <div class="select-wrapper">
                                 <select class="select setting" onchange="setting(this)" data-setting-key="speech.voice">
                                     <option value="alloy">Alloy</option>
+                                    <option value="ash">Ash</option>
+                                    <option value="ballad">Ballad</option>
+                                    <option value="coral">Coral</option>
                                     <option value="echo">Echo</option>
                                     <option value="fable">Fable</option>
                                     <option value="onyx">Onyx</option>
                                     <option value="nova">Nova</option>
+                                    <option value="sage">Sage</option>
                                     <option value="shimmer">Shimmer</option>
+                                    <option value="verse">Verse</option>
                                 </select>
                             </div>
                         </div>
@@ -395,6 +424,17 @@
                             <div class="dot"></div>
                             <div class="dot"></div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Realtime conversation in progress screen -->
+                <div class="screen realtimeScreen">
+                    <span class="prompt-intro">Rozmowa realtime...</span>
+                    <p id="transcript" class="transcript"></p>
+                    <div class="realtime-indicator">
+                        <div class="circle"></div>
+                        <div class="circle"></div>
+                        <div class="circle"></div>
                     </div>
                 </div>
             </div>

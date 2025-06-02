@@ -213,3 +213,35 @@ input:checked+.toggle-slider:before {
 .link-list .el button {
     margin-left: auto;
 }
+
+/* Input Box */
+.input-wrapper {
+    position: relative;
+    min-width: 10rem;
+    /* flex: 1; */
+}
+
+.input {
+    font-family: "Figtree", sans-serif;
+    background-color: var(--theme-alt-1);
+    border: none;
+    border-radius: 0.6rem;
+    color: var(--theme-fg-1);
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    transition: box-shadow 0.2s;
+}
+
+.input::placeholder {
+    color: var(--theme-fg-2);
+}
+
+.input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--active-bg-1);
+}
+
+.input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

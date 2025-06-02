@@ -229,6 +229,7 @@ export default class WakeWord extends EventEmitter {
             const output = data.toString().trim();
             if (output === "WAKE" && !this.paused) {
                 this.emit("wake");
+                this.paused = true;
             }
         });
     }

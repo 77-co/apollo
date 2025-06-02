@@ -7,12 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron . --trace-warnings"
   },
-  "author": "77",
+  "author": "seventy7",
   "license": "ISC",
   "description": "Apollo is an advanced AI voice assistant with a beautiful UI and various integrations.",
   "dependencies": {
     "@google-cloud/speech": "^7.1.0",
-    "@picovoice/porcupine-node": "^3.0.6",
     "axios": "^1.9.0",
     "cheerio": "^1.0.0",
     "dotenv": "^16.5.0",

@@ -1,4 +1,4 @@
-import { ipcMain } from "electron";
+import { ipcMain, session } from "electron";
 import Assistant from "./assistant/assistant.js";
 import WeatherPlugin from "./assistant/plugins/weather/index.js";
 import "dotenv/config";
@@ -6,7 +6,6 @@ import Store from "electron-store";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Porcupine, BuiltinKeyword } from "@picovoice/porcupine-node";
 import WakeWord from "./wake.js";
 import { transcribeStream, synthesise } from "./speech.js";
 import settings from "./settings/settings.js";
@@ -26,8 +25,18 @@ let SpotifyService = null;
 let CalendarService = null;
 
 export function setup(mainWindow) {
-    // OS
+    session.defaultSession.setPermissionRequestHandler(
+        (webContents, permission, callback) => {
+            if (permission === "media") {
+                // you can add logic to check the origin here
+                callback(true); // ✅ allow mic/camera access
+            } else {
+                callback(false);
+            }
+        }
+    );
 
+    // OS
     const wifiManager = new WiFiManager();
     ipcMain.handle("wifi-list-networks", async () => {
         try {
@@ -70,6 +79,7 @@ export function setup(mainWindow) {
         try {
             // Initialise OpenAI API integration
             AssistantService = new Assistant(process.env.OPENAI_API_KEY);
+            AssistantService.createRealtimeSession();
 
             // Wake word detection ("Apollo")
             const forwardEvent = (event, data) => {
@@ -142,6 +152,13 @@ export function setup(mainWindow) {
             throw new Error("Assistant service not initialized");
         }
         return await AssistantService.listModels();
+    });
+
+    ipcMain.handle("create-realtime-session", async () => {
+        if (!AssistantService) {
+            throw new Error("Assistant service not initialized");
+        }
+        return await AssistantService.createRealtimeSession();
     });
 
     // Weather integration
@@ -568,7 +585,7 @@ export function setup(mainWindow) {
         );
     })();
 
-    // TTS integration
+    // STT/TTS integration
     ipcMain.handle("speech-transcribe-stream", async (event) => {
         const forwardEvent = (event, data) => {
             if (mainWindow?.webContents) {

@@ -3,43 +3,50 @@ const { contextBridge, ipcRenderer } = require('electron');
 const AssistantService = {
     initialize: () => {
         // Handle speech module events.
-        ipcRenderer.on('speech-event', (_, { event, data }) => {
-            window.dispatchEvent(new CustomEvent('speech-event', {
-                detail: { event, data }
-            }));
+        ipcRenderer.on("speech-event", (_, { event, data }) => {
+            window.dispatchEvent(
+                new CustomEvent("speech-event", {
+                    detail: { event, data },
+                })
+            );
         });
 
         // Handle wake word module events.
-        ipcRenderer.on('wake-event', (_, { event, data }) => {
-            window.dispatchEvent(new CustomEvent('wake-event', {
-                detail: { event, data }
-            }));
+        ipcRenderer.on("wake-event", (_, { event, data }) => {
+            window.dispatchEvent(
+                new CustomEvent("wake-event", {
+                    detail: { event, data },
+                })
+            );
         });
 
-        return ipcRenderer.invoke('initialize-assistant');
+        return ipcRenderer.invoke("initialize-assistant");
     },
 
     sendMessage: (message, conversationId, options) =>
-        ipcRenderer.invoke('send-message', message, conversationId, options),
+        ipcRenderer.invoke("send-message", message, conversationId, options),
 
     clearConversation: (conversationId) =>
-        ipcRenderer.invoke('clear-conversation', conversationId),
+        ipcRenderer.invoke("clear-conversation", conversationId),
 
-    listModels: () =>
-        ipcRenderer.invoke('list-models'),
+    listModels: () => ipcRenderer.invoke("list-models"),
+
+    createRealtimeSession: () => ipcRenderer.invoke("create-realtime-session"),
 
     streamMessage: (message, id, conversationId = null, options = {}) => {
         return new Promise((resolve, reject) => {
             const handleChunk = (_, chunk) => {
-                window.dispatchEvent(new CustomEvent(id + '-assistant-chunk', {
-                    detail: chunk
-                }));
+                window.dispatchEvent(
+                    new CustomEvent(id + "-assistant-chunk", {
+                        detail: chunk,
+                    })
+                );
             };
 
             const cleanup = () => {
-                ipcRenderer.removeListener('stream-chunk', handleChunk);
-                ipcRenderer.removeListener('stream-end', handleEnd);
-                ipcRenderer.removeListener('stream-error', handleError);
+                ipcRenderer.removeListener("stream-chunk", handleChunk);
+                ipcRenderer.removeListener("stream-end", handleEnd);
+                ipcRenderer.removeListener("stream-error", handleError);
             };
 
             const handleEnd = () => {
@@ -52,13 +59,18 @@ const AssistantService = {
                 reject(new Error(error));
             };
 
-            ipcRenderer.on('stream-chunk', handleChunk);
-            ipcRenderer.once('stream-end', handleEnd);
-            ipcRenderer.once('stream-error', handleError);
+            ipcRenderer.on("stream-chunk", handleChunk);
+            ipcRenderer.once("stream-end", handleEnd);
+            ipcRenderer.once("stream-error", handleError);
 
-            ipcRenderer.send('stream-message', message, conversationId, options);
+            ipcRenderer.send(
+                "stream-message",
+                message,
+                conversationId,
+                options
+            );
         });
-    }
+    },
 };
 
 const WeatherService = {

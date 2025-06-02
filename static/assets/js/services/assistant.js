@@ -31,12 +31,20 @@ class ApolloUI {
 
     setupEventListeners() {
         // Wake word detection
-        window.addEventListener('wake-event', (e) => {
+        window.addEventListener('wake-event', async (e) => {
+            const isRealtime = await window.backend.settings.get("ai.realtime");
             const { event } = e.detail;
+
             if (event === 'wake' && !this.isStreamingResponse) {
-                resetIdleTimer();
-                closeKeyboard();
-                this.startListening();
+                if (isRealtime) {
+                    const sessionToken = await window.backend.assistant.createRealtimeSession();
+                    this.switchScreen("realtime");
+                    this.startRealtime(sessionToken);
+                } else {
+                    resetIdleTimer();
+                    closeKeyboard();
+                    this.startListening();
+                }
             }
         });
 
@@ -322,10 +330,46 @@ class ApolloUI {
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
     }
+
+    async startRealtime(ephemeralKey) {
+        const pc = new RTCPeerConnection();
+
+        const audioEl = document.createElement("audio");
+        audioEl.autoplay = true;
+        pc.ontrack = (e) => (audioEl.srcObject = e.streams[0]);
+
+        const ms = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+        });
+        pc.addTrack(ms.getTracks()[0]);
+
+        const dc = pc.createDataChannel("oai-events");
+        dc.addEventListener("message", (e) => {
+            console.log(e);
+        });
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        const baseUrl = "https://api.openai.com/v1/realtime";
+        const sdpResponse = await fetch(`${baseUrl}`, {
+            method: "POST",
+            body: offer.sdp,
+            headers: {
+                Authorization: `Bearer ${ephemeralKey}`,
+                "Content-Type": "application/sdp",
+            },
+        });
+
+        const answer = {
+            type: "answer",
+            sdp: await sdpResponse.text(),
+        };
+        await pc.setRemoteDescription(answer);
+    }
 }
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.apollo = new ApolloUI();
-    // window.apollo.switchScreen('listeningProcessing')
 });

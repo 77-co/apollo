@@ -6,6 +6,8 @@ import record from 'node-record-lpcm16';
 import OpenAI from 'openai';
 import { spawn } from 'child_process';
 
+const TTS_INSTRUCTIONS = `You are a voice assistant speaking in a clear, neutral tone. Your voice should sound calm, concise, and slightly warm — welcoming, but not overly emotional or enthusiastic. Avoid exaggerated inflection. Maintain a natural, human cadence, with subtle pauses where appropriate. Your delivery should be helpful and attentive, without sounding robotic or monotone.`;
+
 // Initialise the Speech client
 const client = new SpeechClient();
 
@@ -22,9 +24,9 @@ export function transcribeStream(onTranscript, onFinalResult) {
     // Configure request for streaming recognition
     const request = {
         config: {
-            encoding: 'LINEAR16', // Audio encoding
+            encoding: "LINEAR16", // Audio encoding
             sampleRateHertz: 16000, // Sample rate
-            languageCode: 'pl-PL', // Preferred language
+            languageCode: "pl-PL", // Preferred language
         },
         interimResults: true, // For real-time results
     };
@@ -90,7 +92,7 @@ export function transcribeStream(onTranscript, onFinalResult) {
     }, 300);
 }
 
-export async function synthesise(text, voiceName = 'alloy') {
+export async function synthesise(text, voiceName = 'ash') {
     // Kill any currently playing audio
     if (currentPlayer) {
         currentPlayer.kill();
@@ -98,10 +100,11 @@ export async function synthesise(text, voiceName = 'alloy') {
     }
 
     const response = await openai.audio.speech.create({
-        model: 'tts-1',
+        model: "gpt-4o-mini-tts",
+        instructions: TTS_INSTRUCTIONS,
         voice: voiceName,
         input: text,
-        response_format: 'opus'
+        response_format: "opus",
     });
 
     const ffplay = spawn('ffplay', [
