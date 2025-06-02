@@ -66,12 +66,6 @@ export function setup(mainWindow) {
     // Assistant (AI + wake word) integration
 
     const wake = new WakeWord();
-    // Graceful stop
-    process.on("SIGINT", () => {
-        console.log("\nShutting down...");
-        wake.stop();
-        setTimeout(() => process.exit(0), 1000);
-    });
     ipcMain.handle("initialize-assistant", async (event) => {
         try {
             // Initialise OpenAI API integration
@@ -86,7 +80,7 @@ export function setup(mainWindow) {
 
             wake.start();
             // Initialize microphone before processing loop
-            wake.on("wakeWordDetected", (data) => {
+            wake.on("wake", () => {
                 forwardEvent("wake");
             });
 
@@ -575,7 +569,6 @@ export function setup(mainWindow) {
     })();
 
     // TTS integration
-
     ipcMain.handle("speech-transcribe-stream", async (event) => {
         const forwardEvent = (event, data) => {
             if (mainWindow?.webContents) {
@@ -583,12 +576,12 @@ export function setup(mainWindow) {
             }
         };
 
-        record.pause();
+        wake.paused = true;
         transcribeStream(
             (transcript) => forwardEvent("chunk", transcript),
             (transcript) => {
                 forwardEvent("finished", transcript);
-                record.unpause();
+                wake.paused = false;
             }
         );
     });
@@ -599,7 +592,6 @@ export function setup(mainWindow) {
     });
 
     // Settings handling
-
     ipcMain.handle("setting-set", async (event, key, value) =>
         settings.set(key, value)
     );
@@ -607,7 +599,6 @@ export function setup(mainWindow) {
     ipcMain.handle("setting-get", async (event, key) => settings.get(key));
 
     // Memos integration
-
     ipcMain.handle("memo-create", async (event, title, value) =>
         memos.createNote(title, value)
     );

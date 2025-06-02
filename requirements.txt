@@ -4,3 +4,4 @@ sounddevice
 numpy
 openwakeword==0.5.1
 onnxruntime
+vosk
