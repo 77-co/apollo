@@ -394,6 +394,45 @@
                         <button><span class="material-symbols-outlined fill">skip_next</span></button>
                     </div>
                 </div>
+                <div class="widget xl" id="calendar">
+                    <div class="header">
+                        <button class="nav-button" onclick="changeWeek(-1)">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </button>
+                        <div class="month-year" id="monthYear"></div>
+                        <button class="nav-button" onclick="changeWeek(1)">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                    </div>
+                    
+                    <div class="weekdays">
+                        <div class="weekday">Nd</div>
+                        <div class="weekday">Pn</div>
+                        <div class="weekday">Wt</div>
+                        <div class="weekday">Śr</div>
+                        <div class="weekday">Cz</div>
+                        <div class="weekday">Pt</div>
+                        <div class="weekday">Sb</div>
+                    </div>
+                    
+                    <div class="week-container">
+                        <div class="week" id="currentWeek"></div>
+                    </div>
+                    
+                    <div class="today-info">
+                        <div class="today-date" id="todayDate"></div>
+                        <div class="events">
+                            <div class="event">
+                                <span class="material-symbols-outlined">event</span>
+                                <span>Spotkanie zespołu - 14:00</span>
+                            </div>
+                            <div class="event">
+                                <span class="material-symbols-outlined">notifications</span>
+                                <span>Przypomnienie - 16:30</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="col" id="apolloScreen">
                 <!-- Idle Screen -->
