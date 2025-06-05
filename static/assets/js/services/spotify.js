@@ -70,6 +70,8 @@ class SpotifyWidget {
             const result = await window.backend.spotify.initialize();
             if (!result.success) {
                 console.error('Spotify initialization failed:', result.error);
+            } else {
+                $(".spotifyLoginAlert").removeClass("active");
             }
         } catch (error) {
             console.error('Failed to initialize Spotify:', error);
@@ -82,7 +84,6 @@ class SpotifyWidget {
             
             switch (event) {
                 case 'authInitialized':
-                    console.log('initalisedauth', data)
                     if (data.qrCode) {
                         integrations['spotify'].qrcode = data.qrCode;
                     }

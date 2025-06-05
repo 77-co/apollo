@@ -52,7 +52,6 @@ $(window).on("load", function () {
             );
         } else if (el.tagName === "INPUT") {
             // Is a text input field
-            console.log($(el).data("setting-key"));
             el.value = await window.backend.settings.get(
                 $(el).data("setting-key")
             );
