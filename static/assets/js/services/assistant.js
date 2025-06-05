@@ -38,8 +38,8 @@ class ApolloUI {
             if (event === 'wake' && !this.isStreamingResponse) {
                 if (isRealtime) {
                     const sessionToken = await window.backend.assistant.createRealtimeSession();
-                    this.switchScreen("realtime");
                     this.startRealtime(sessionToken);
+                    this.switchScreen("realtime");
                 } else {
                     resetIdleTimer();
                     closeKeyboard();

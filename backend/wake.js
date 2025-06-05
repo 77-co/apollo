@@ -218,7 +218,7 @@ export default class WakeWord extends EventEmitter {
         super();
 
         this.scriptPath = config.scriptPath || "wake/main.py";
-        this.pythonPath = config.pythonPath || "python";
+        this.pythonPath = config.pythonPath || (process.platform === "win32" ? "python" : "python3");
         this.paused = false;
         this.process = null;
     }

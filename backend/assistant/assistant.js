@@ -538,17 +538,17 @@ export default class Assistant {
 
             const sessionConfig = {
                 model: options.model || "gpt-4o-mini-realtime-preview",
-                modalities: options.modalities || ["text", "audio"],
                 instructions: options.instructions || SYSTEM_PROMPT,
                 voice: options.voice || "alloy",
-                input_audio_format: options.input_audio_format || "pcm16",
-                output_audio_format: options.output_audio_format || "pcm16",
-                input_audio_transcription:
-                    options.input_audio_transcription || null,
-                turn_detection: options.turn_detection || null,
+                // input_audio_format: options.input_audio_format || "pcm16",
+                // output_audio_format: options.output_audio_format || "pcm16",
+                // input_audio_transcription:
+                //     options.input_audio_transcription || null,
+                input_audio_noise_reduction: options.input_audio_noise_reduction || { type: "far_field" },
+                turn_detection: options.turn_detection || { type: "server_vad", threshold: 0.4, },
                 tools: tools.length > 0 ? tools : undefined,
                 tool_choice: options.tool_choice || "auto",
-                temperature: options.temperature || 0.7,
+                // temperature: options.temperature || 0.7,
                 max_response_output_tokens:
                     options.max_response_output_tokens || 4096,
             };
