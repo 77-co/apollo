@@ -22,15 +22,6 @@
                 "type": "boolean",
                 "default": false,
                 "description": "Force refresh of news data, bypassing cache"
-            },
-            "include_full_content": {
-                "type": "boolean",
-                "default": false,
-                "description": "Include full article content in addition to summary"
-            },
-            "source_filter": {
-                "type": "string",
-                "description": "Filter articles by specific news source. Available sources depend on category: Tech/Science: 'Polsat News', 'Nauka w Polsce', 'Interia' | World: 'Polsat News', 'Gazeta.pl', 'TVN24' | Business: 'Polsat News', 'Puls Biznesu', 'Interia Biznes', 'Bankier.pl', 'Money.pl' | Sport: 'Polsat News', 'WP SportoweFakty' | All: any of the above"
             }
         }
     }

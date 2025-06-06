@@ -36,7 +36,7 @@ class MobiClient:
         "11:00": 5, "11:55": 6, "13:00": 7, "14:05": 8,
         "15:00": 9, "15:55": 10, "16:45": 11, "17:35": 12,
         "18:25": 13, "19:15": 14, "20:05": 15
-}
+    }
     
     def __init__(self, username: str, password: str):
         self.session = requests.Session()
@@ -49,41 +49,91 @@ class MobiClient:
         if "Podano niepoprawny login i/lub hasło" in response.text:
             raise Exception("Invalid credentials")
 
+    def _clean_html_text(self, text: str) -> str:
+        """Clean HTML tags and normalize whitespace"""
+        # Remove HTML tags
+        text = re.sub(r'<[^>]+>', '', text)
+        # Normalize whitespace
+        text = re.sub(r'\s+', ' ', text.replace('\n', '').replace('\r', '')).strip()
+        return text
+
     def _parse_lesson_title(self, title_text: str, left_value: str) -> Lesson:
-        title_text = re.sub(r'\s+', ' ', title_text.replace('\n', '').replace('\r', '')).strip()
+        # Clean the HTML and normalize text
+        cleaned_text = self._clean_html_text(title_text)
         
-        if "odwołana" in title_text.lower():
-            pattern = r'(\d{2}:\d{2} - \d{2}:\d{2})<br />(.*?)<br />'
-            match = re.search(pattern, title_text)
-            if match:
+        # Check if lesson is cancelled
+        if "odwołana" in cleaned_text.lower():
+            time_pattern = r'(\d{2}:\d{2} - \d{2}:\d{2})'
+            time_match = re.search(time_pattern, cleaned_text)
+            if time_match:
+                time_str = time_match.group(1)
+                # Extract subject (everything after time until end or next identifiable part)
+                subject_text = re.sub(time_pattern, '', cleaned_text).strip()
                 return Lesson(
-                    id=self._get_lesson_id(match.group(1)),
-                    time=match.group(1),
-                    subject=match.group(2),
+                    id=self._get_lesson_id(time_str),
+                    time=time_str,
+                    subject=subject_text,
                     status="Odwołana"
                 )
         
-        pattern = r'(\d{2}:\d{2} - \d{2}:\d{2})<br />(.*?)<br />(.*?)\((.*?)\)'
-        match = re.search(pattern, title_text)
-        if match:
-            status = "Zastępstwo lub zmiana sali" if "zastępstwo" in title_text.lower() else "Odbędzie się"
+        # Check for substitution
+        is_substitution = "zastępstwo" in cleaned_text.lower()
+        
+        # Extract time
+        time_pattern = r'(\d{2}:\d{2} - \d{2}:\d{2})'
+        time_match = re.search(time_pattern, cleaned_text)
+        
+        if not time_match:
+            raise Exception(f"Unable to find time in lesson title: {cleaned_text}")
+        
+        time_str = time_match.group(1)
+        
+        # Remove time from text to parse the rest
+        remaining_text = re.sub(time_pattern, '', cleaned_text).strip()
+        
+        # Split by common separators and clean up
+        parts = [part.strip() for part in re.split(r'[-–—]', remaining_text) if part.strip()]
+        
+        if len(parts) >= 2:
+            # First part is usually subject, last part is usually teacher
+            subject = parts[0]
+            teacher = parts[-1]
+            
+            # Try to extract location if it exists (usually in parentheses or after specific patterns)
+            location_match = re.search(r'\(([^)]+)\)', remaining_text)
+            location = location_match.group(1) if location_match else None
+            
+            status = "Zastępstwo" if is_substitution else "Odbędzie się"
+            
             return Lesson(
-                id=self._get_lesson_id(match.group(1)),
-                time=match.group(1),
-                subject=match.group(2),
-                teacher=match.group(3),
-                location=match.group(4),
+                id=self._get_lesson_id(time_str),
+                time=time_str,
+                subject=subject,
+                teacher=teacher,
+                location=location,
                 status=status
             )
-        
-        raise Exception(f"Unable to parse lesson title: {title_text}")
+        elif len(parts) == 1:
+            # Only one part - treat as subject
+            return Lesson(
+                id=self._get_lesson_id(time_str),
+                time=time_str,
+                subject=parts[0],
+                status="Zastępstwo" if is_substitution else "Odbędzie się"
+            )
+        else:
+            # Fallback: use the entire remaining text as subject
+            return Lesson(
+                id=self._get_lesson_id(time_str),
+                time=time_str,
+                subject=remaining_text,
+                status="Zastępstwo" if is_substitution else "Odbędzie się"
+            )
 
     def _get_lesson_id(self, time_str: str) -> int:
-        return next(
-            (time_id for time_value, time_id in self.TIME_TO_ID.items() 
-             if time_value in time_str),
-            0
-        )
+        # Extract start time from "HH:MM - HH:MM" format
+        start_time = time_str.split(' - ')[0] if ' - ' in time_str else time_str
+        return self.TIME_TO_ID.get(start_time, 0)
 
     def _get_weekday(self, left_value: str) -> str:
         left_percent = float(left_value.rstrip('%'))
@@ -122,11 +172,16 @@ class MobiClient:
             
             if not left_value:
                 continue
-                
-            lesson = self._parse_lesson_title(first_div['title'], left_value)
-            weekday = self._get_weekday(left_value)
-            lesson.weekday = weekday
-            schedule[weekday].append(lesson)
+            
+            try:
+                lesson = self._parse_lesson_title(first_div.get('title', ''), left_value)
+                weekday = self._get_weekday(left_value)
+                lesson.weekday = weekday
+                schedule[weekday].append(lesson)
+            except Exception as e:
+                # Log the error but continue processing other lessons
+                print(f"Warning: Failed to parse lesson: {e}", file=sys.stderr)
+                continue
         
         for day in schedule:
             schedule[day].sort(key=lambda x: x.id)
