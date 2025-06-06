@@ -236,7 +236,8 @@
                     </div>
                     
                     <div class="category" id="linkSettings">
-                        <div class="spotifyLoginAlert" id="linkLoginAlert">
+                        <div class="linkLoginAlert" id="linkLoginAlert">
+                            <span class="material-symbols-outlined" id="closeLoginAlert" onclick="$(this).parent().removeClass('active')">close</span>
                             <div class="qrBlur" id="linkQrBlur">
                                 <span>Kontynuuj logowanie na telefonie</span>
                                 <button onclick="$(this).parent().removeClass('active')">Pokaż kod QR</button>

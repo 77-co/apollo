@@ -176,6 +176,7 @@
 }
 
 #settings #linkSettings .spotifyLoginAlert,
+#settings #linkSettings .linkLoginAlert,
 #settings #spotifySettings .spotifyDeviceAlert {
     position: absolute;
     width: 100%;
@@ -198,6 +199,7 @@
     z-index: 2;
 }
 
+.linkLoginAlert,
 .spotifyLoginAlert,
 .spotifyDeviceAlert {
     opacity: 0;
@@ -205,6 +207,24 @@
     transition: opacity 0.3s;
 }
 
+#closeLoginAlert {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+
+    width: 3.5rem;
+    height: 3.5rem;
+    opacity: 0.4;
+    border-bottom-right-radius: 0.75rem;
+    z-index: 100;
+}
+
+.linkLoginAlert.active,
 .spotifyLoginAlert.active,
 .spotifyDeviceAlert.active {
     opacity: 1;

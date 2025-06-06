@@ -63,3 +63,7 @@ class Integration {
 function closeAuth() {
     $('#linkLoginAlert').removeClass('active');
 }
+
+window.addEventListener("ready", () => {
+    closeAuth();
+});
