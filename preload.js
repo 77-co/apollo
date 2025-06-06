@@ -197,6 +197,10 @@ const rss = {
         ipcRenderer.invoke('rss-get-all-categories'),
 };
 
+const integrations = {
+    deintegrate: (integration) => ipcRenderer.invoke("deintegrate", integration),
+}
+
 
 contextBridge.exposeInMainWorld('backend', {
     assistant: AssistantService,
@@ -207,6 +211,7 @@ contextBridge.exposeInMainWorld('backend', {
 
     spotify: SpotifyService,
     google: CalendarService,
-    system: system,
-    rss: rss,
+    system,
+    rss,
+    integrations,
 });

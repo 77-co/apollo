@@ -2,6 +2,8 @@ class SpotifyWidget {
     constructor() {
         this.integration = new Integration('spotify', () => {
             // Handle logging out (unlinking account)
+            window.backend.spotify.destroy();
+            window.backend.integrations.deintegrate("spotify");
         });
 
         this.widget = document.getElementById('spotify');

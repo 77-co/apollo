@@ -3,7 +3,7 @@ import Store from 'electron-store';
 const store = new Store();
 
 const getNotes = () => {
-    return store.get('notes');
+    return store.get('notes', []);
 };
 
 export default {

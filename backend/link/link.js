@@ -9,3 +9,8 @@ export function getIntegrations() {
 export function setIntegration(integration, data) {
     store.set(`integrations.${integration}`, data);
 }
+
+export function deintegrate(integration) {
+    console.log(integration);
+    store.delete(`integrations.${integration}`);
+}

@@ -17,6 +17,7 @@ import { SpotifyClient } from "./spotify/index.js";
 import GoogleCalendarClient from "./google-calendar/index.js";
 
 import { WiFiManager } from "./os/wifi.js";
+import { deintegrate } from "./link/link.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -683,4 +684,6 @@ export function setup(mainWindow) {
     );
 
     ipcMain.handle("memos-get", async (event) => memos.getNotes());
+
+    ipcMain.handle("deintegrate", async (event, integration) => deintegrate(integration))
 }
