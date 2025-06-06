@@ -10,6 +10,8 @@ import WakeWord from "./wake.js";
 import { transcribeStream, synthesise } from "./speech.js";
 import settings from "./settings/settings.js";
 import memos from "./memos/index.js";
+import { RSSManager } from './rss/index.js';
+
 
 import { SpotifyClient } from "./spotify/index.js";
 import GoogleCalendarClient from "./google-calendar/index.js";
@@ -35,6 +37,58 @@ export function setup(mainWindow) {
             }
         }
     );
+
+    // RSS
+    const rssManager = new RSSManager();
+
+    ipcMain.handle("rss-get-news", async (event, category = 'tech') => {
+        try {
+            const news = await rssManager.getNews(category);
+            return {
+                success: true,
+                news: news
+            };
+        } catch (error) {
+            console.error('RSS get news error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("rss-refresh-news", async (event, category = 'tech') => {
+        try {
+            const news = await rssManager.refreshNews(category);
+            return {
+                success: true,
+                news: news
+            };
+        } catch (error) {
+            console.error('RSS refresh news error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("rss-get-all-categories", async () => {
+        try {
+            const allNews = await rssManager.getAllCategories();
+            return {
+                success: true,
+                news: allNews
+            };
+        } catch (error) {
+            console.error('RSS get all categories error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
 
     // OS
     const wifiManager = new WiFiManager();

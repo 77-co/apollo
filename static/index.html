@@ -234,6 +234,7 @@
         
                         <p>Jeśli to widzisz to znaczy, że pomyślnie udało ci się połączyć konto Spotify!</p>
                     </div>
+                    
                     <div class="category" id="linkSettings">
                         <div class="spotifyLoginAlert" id="linkLoginAlert">
                             <div class="qrBlur" id="linkQrBlur">
@@ -287,6 +288,38 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="app" id="newsApp">
+                <span class="appTitle">Aktualności</span>
+                <div class="news-content">
+                    <div class="news-sources">
+                        <h3>Źródła</h3>
+                        <div class="source-list">
+                            <div class="source-item active" data-source="tech_science">
+                                <span class="material-symbols-outlined">computer</span>
+                                <span>Technologie i nauka</span>
+                            </div>
+                            <div class="source-item" data-source="world">
+                                <span class="material-symbols-outlined">public</span>
+                                <span>Świat</span>
+                            </div>
+                            <div class="source-item" data-source="business">
+                                <span class="material-symbols-outlined">business</span>
+                                <span>Biznes</span>
+                            </div>
+                            <div class="source-item" data-source="sport">
+                                <span class="material-symbols-outlined">sports_soccer</span>
+                                <span>Sport</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="news-feed">
+                        <!-- Articles will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
         </div>
         
         <div class="container" id="uiContainer">
@@ -433,7 +466,36 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="widget lg" id="rss" onclick="openApp('newsApp', this)">
+                    <div class="rssLoginAlert active">
+                        <p>Ładowanie wiadomości RSS...</p>
+                    </div>
+                    
+                    <div class="header">
+                        <h2>Aktualności</h2>
+                        <span class="source"></span>
+                    </div>
+                    
+                    <div class="current-news">
+                        <h3 class="headline"></h3>
+                        <span class="timestamp"></span>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="article-counter">
+                            <span class="current">1</span>
+                            <span>/</span>
+                            <span class="total">5</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
+
             <div class="col" id="apolloScreen">
                 <!-- Idle Screen -->
                 <div class="screen idleScreen active">
@@ -531,6 +593,7 @@
     <script src="./assets/js/services/link.js"></script>
     <script src="./assets/js/services/time.js"></script>
     <script src="./assets/js/services/weather.js"></script>
+    <script src="./assets/js/services/rss.js"></script>
     <script src="./assets/js/services/settings.js"></script>
     <script src="./assets/js/services/assistant.js"></script>
     <script src="./assets/js/services/memos.js"></script>

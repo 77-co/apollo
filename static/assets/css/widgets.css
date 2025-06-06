@@ -368,3 +368,124 @@
 #calendar .event .material-symbols-outlined {
     font-size: 0.9rem;
 }
+
+#rss {
+    display: flex;
+    flex-direction: column;
+    background-image: 
+        radial-gradient(ellipse at top left, rgba(255, 107, 107, 0.6), transparent 70%),
+        radial-gradient(ellipse at bottom right, rgba(255, 142, 83, 0.6), transparent 70%);
+    position: relative;
+}
+
+#rss .rssLoginAlert {
+    position: absolute;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: inherit;
+    z-index: 5;
+    background-color: var(--theme-transparent);
+    
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+#rss .rssLoginAlert.active {
+    opacity: 1;
+    pointer-events: initial;
+}
+
+#rss .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+#rss .header h2 {
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+#rss .header .source {
+    font-size: 0.9rem;
+    font-weight: 300;
+    opacity: 0.8;
+}
+
+#rss .current-news {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+}
+
+#rss .current-news .headline {
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+#rss .current-news .timestamp {
+    font-size: 0.85rem;
+    font-weight: 300;
+    opacity: 0.7;
+    margin-top: auto;
+}
+
+#rss .progress-container {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: solid 1px var(--theme-alt-1);
+}
+
+#rss .article-counter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.8rem;
+}
+
+#rss .article-counter .current {
+    font-weight: 600;
+}
+
+#rss .progress-bar {
+    width: 100%;
+    height: 2px;
+    background-color: var(--theme-alt-1);
+    border-radius: 1px;
+    overflow: hidden;
+    position: relative;
+}
+
+#rss .progress-fill {
+    height: 100%;
+    background-color: var(--theme-fg-1);
+    width: 0%;
+    border-radius: 1px;
+    transition: width 0.1s linear;
+}
+
+#rss .progress-paused .progress-fill {
+    transition: none;
+}
+

@@ -137,3 +137,6 @@ google-cloud-key.json
 
 # Python Virtual Environments
 .venv/
+
+# RSS Cache directory
+backend/rss/cache/

@@ -188,6 +188,16 @@ const system = {
     },
 };
 
+const rss = {
+    getNews: (category) =>
+        ipcRenderer.invoke('rss-get-news', category),
+    refreshNews: (category) =>
+        ipcRenderer.invoke('rss-refresh-news', category),
+    getAllCategories: () =>
+        ipcRenderer.invoke('rss-get-all-categories'),
+};
+
+
 contextBridge.exposeInMainWorld('backend', {
     assistant: AssistantService,
     weather: WeatherService,
@@ -198,4 +208,5 @@ contextBridge.exposeInMainWorld('backend', {
     spotify: SpotifyService,
     google: CalendarService,
     system: system,
+    rss: rss,
 });
