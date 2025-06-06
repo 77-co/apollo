@@ -1,0 +1,37 @@
+{
+    "name": "getNews",
+    "description": "Get latest news articles from Polish RSS feeds across different categories including technology, world news, business, and sports",
+    "parameters": {
+        "type": "object",
+        "required": [],
+        "properties": {
+            "category": {
+                "type": "string",
+                "enum": ["tech_science", "world", "business", "sport", "all"],
+                "default": "tech_science",
+                "description": "News category to retrieve"
+            },
+            "max_articles": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 15,
+                "default": 10,
+                "description": "Maximum number of articles to return"
+            },
+            "force_refresh": {
+                "type": "boolean",
+                "default": false,
+                "description": "Force refresh of news data, bypassing cache"
+            },
+            "include_full_content": {
+                "type": "boolean",
+                "default": false,
+                "description": "Include full article content in addition to summary"
+            },
+            "source_filter": {
+                "type": "string",
+                "description": "Filter articles by specific news source. Available sources depend on category: Tech/Science: 'Polsat News', 'Nauka w Polsce', 'Interia' | World: 'Polsat News', 'Gazeta.pl', 'TVN24' | Business: 'Polsat News', 'Puls Biznesu', 'Interia Biznes', 'Bankier.pl', 'Money.pl' | Sport: 'Polsat News', 'WP SportoweFakty' | All: any of the above"
+            }
+        }
+    }
+}

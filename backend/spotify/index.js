@@ -329,7 +329,6 @@ export class SpotifyClient extends EventEmitter {
 
     async getDevices() {
         const response = await this._apiRequest('GET', '/me/player/devices');
-        console.log('Spotify devices:', response.devices);
         return response.devices;
     }
 
