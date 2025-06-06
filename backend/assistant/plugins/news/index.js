@@ -94,7 +94,6 @@ export default {
                         source: article.source,
                         author: article.author,
                         link: article.link,
-                        published_at: article.timestamp.toISOString(),
                         guid: article.guid
                     };
 
