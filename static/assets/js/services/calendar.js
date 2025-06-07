@@ -2,6 +2,8 @@ class Calendar {
     constructor() {
         this.integration = new Integration('google', () => {
             // Handle logging out (unlinking account)
+            window.backend.google.destroy();
+            window.backend.integrations.deintegrate("google");
         });
         this.initializeGoogle();
         this.setupEventListeners();
@@ -13,6 +15,8 @@ class Calendar {
             const result = await window.backend.google.initialize();
             if (!result.success) {
                 console.error('Google Calendar initialization failed:', result.error);
+            } else {
+                console.log(await window.backend.google.getUpcomingEvents());
             }
         } catch (error) {
             console.error('Failed to initialize Google Calendar:', error);

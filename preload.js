@@ -143,6 +143,8 @@ const CalendarService = {
         ipcRenderer.removeAllListeners('calendar-event');
         return ipcRenderer.invoke('calendar-destroy');
     },
+
+    getUpcomingEvents: () => ipcRenderer.invoke("calendar-get-upcoming-events"),
 };
 
 const SpeechService = {

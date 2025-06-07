@@ -634,11 +634,45 @@ export function setup(mainWindow) {
         );
     });
 
-    (async () => {
-        console.log(
-            await handleCalendarCall(() => CalendarService.getCalendarList())
+    ipcMain.handle("calendar-get-upcoming-events", async (event) => {
+        const calendars = await handleCalendarCall(() => CalendarService.getCalendarList());
+
+        const now = new Date().toISOString();
+
+        const allEvents = await Promise.all(
+            calendars.result.map(async (cal) => {
+                const events = await handleCalendarCall(() => CalendarService.getEvents(cal.id, {
+                    timeMin: now,
+                    maxResults: 50, // adjust as needed
+                }));
+                return events.result.map((event) => ({
+                    ...event,
+                    calendarId: cal.id,
+                }));
+            })
         );
-    })();
+
+        console.log(allEvents);
+
+        // Flatten and sort all events by start time
+        const upcomingEvents = allEvents.flat().sort((a, b) => {
+            const aStart = new Date(
+                a.start?.dateTime || a.start?.date
+            ).getTime();
+            const bStart = new Date(
+                b.start?.dateTime || b.start?.date
+            ).getTime();
+            return aStart - bStart;
+        });
+
+        return await handleCalendarCall(() => CalendarService.getEvents());
+    });
+
+    // (async () => {
+    //     console.log(
+    //         await handleCalendarCall(() => CalendarService.getCalendarList())
+    //     );
+    // })();
 
     // STT/TTS integration
     ipcMain.handle("speech-transcribe-stream", async (event) => {
