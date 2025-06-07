@@ -56,14 +56,13 @@ export default {
         return;
       }
 
-      console.log('Executing mobidziennik script...');
-
       const pythonScript = path.join(__dirname, 'mobi.py');
       
       const python = spawn(process.platform === 'win32' ? 'python' : 'python3', [
         pythonScript,
         '-u', USERNAME,
-        '-p', PASSWORD
+        '-p', PASSWORD,
+        '--schedule'
       ], {
         encoding: 'utf-8'
       });

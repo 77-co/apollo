@@ -190,6 +190,21 @@ const system = {
     },
 };
 
+const MobidziennikService = {
+    getEvents: (params) => 
+        ipcRenderer.invoke('mobi-get-events', params),
+    
+    getUpcoming: (params) => 
+        ipcRenderer.invoke('mobi-get-upcoming', params),
+    
+    getByType: () => 
+        ipcRenderer.invoke('mobi-get-by-type'),
+        
+    getDateRange: (params) => 
+        ipcRenderer.invoke('mobi-get-date-range', params)
+};
+
+
 const rss = {
     getNews: (category) =>
         ipcRenderer.invoke('rss-get-news', category),
@@ -210,7 +225,7 @@ contextBridge.exposeInMainWorld('backend', {
     speech: SpeechService,
     settings,
     memos,
-
+    mobidziennik: MobidziennikService,
     spotify: SpotifyService,
     google: CalendarService,
     system,

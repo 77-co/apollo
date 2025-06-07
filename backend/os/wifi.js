@@ -9,8 +9,7 @@ export class WiFiManager {
         this.platform = platform();
         this.isWindows = this.platform === 'win32';
         if (this.isWindows) {
-            console.log('WiFiManager will supply dummy data instead of executing actual commands.');
-        }
+            }
     }
 
     async executeCommand(command) {

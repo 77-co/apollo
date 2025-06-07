@@ -3,13 +3,14 @@ import sys
 import json
 import locale
 import codecs
+import re
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 import requests
 from bs4 import BeautifulSoup
-import re
 from dataclasses import dataclass, asdict
 
+# Set UTF-8 encoding explicitly
 sys.stdin.reconfigure(encoding='utf-8')
 sys.stdout.reconfigure(encoding='utf-8')
 sys.stderr.reconfigure(encoding='utf-8')
@@ -24,6 +25,16 @@ class Lesson:
     location: Optional[str] = None
     status: str = "Odbędzie się"
     weekday: Optional[str] = None
+
+@dataclass
+class CalendarEvent:
+    """Represents an event in the calendar"""
+    date: str  # YYYY-MM-DD format
+    title: str
+    description: Optional[str] = None
+    event_id: Optional[str] = None
+    color: Optional[str] = None
+    event_type: Optional[str] = None
 
 class MobiClient:
     """Client for interacting with the MobiDziennik school system"""
@@ -40,6 +51,14 @@ class MobiClient:
     
     def __init__(self, username: str, password: str):
         self.session = requests.Session()
+        # Set proper headers for UTF-8
+        self.session.headers.update({
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Charset': 'UTF-8',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        })
+        
         response = self.session.post(
             self.BASE_URL,
             data={"login": username, "haslo": password}
@@ -49,17 +68,42 @@ class MobiClient:
         if "Podano niepoprawny login i/lub hasło" in response.text:
             raise Exception("Invalid credentials")
 
+    def _decode_unicode_escapes(self, text: str) -> str:
+        """Decode Unicode escape sequences like \\u0144 to proper UTF-8"""
+        if not text:
+            return text
+        
+        try:
+            # Handle both \u and \\u patterns
+            text = text.replace('\\u', '\\u')
+            # Decode Unicode escapes
+            return text.encode().decode('unicode_escape')
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            try:
+                # Alternative approach using codecs
+                return codecs.decode(text, 'unicode_escape')
+            except:
+                # If all else fails, return original text
+                return text
+
     def _clean_html_text(self, text: str) -> str:
         """Clean HTML tags and normalize whitespace"""
+        if not text:
+            return ""
         # Remove HTML tags
         text = re.sub(r'<[^>]+>', '', text)
         # Normalize whitespace
         text = re.sub(r'\s+', ' ', text.replace('\n', '').replace('\r', '')).strip()
+        # Decode Unicode escapes
+        text = self._decode_unicode_escapes(text)
         return text
 
     def _parse_lesson_title(self, title_text: str, left_value: str) -> Lesson:
         # Clean the HTML and normalize text
         cleaned_text = self._clean_html_text(title_text)
+        
+        if not cleaned_text:
+            raise Exception("Empty lesson title")
         
         # Check if lesson is cancelled
         if "odwołana" in cleaned_text.lower():
@@ -145,7 +189,101 @@ class MobiClient:
         
         return self.WEEKDAYS[-1]
 
+    def _extract_calendar_events(self, html_content: str) -> List[CalendarEvent]:
+        """Extract events from FullCalendar JavaScript initialization"""
+        events = []
+        
+        # Look for the events array in the FullCalendar initialization
+        # Pattern: events: [{...}, {...}, ...]
+        pattern = r'events:\s*\[(.*?)\](?=\s*[,}])'
+        match = re.search(pattern, html_content, re.DOTALL)
+        
+        if not match:
+            return events
+        
+        events_text = '[' + match.group(1) + ']'
+        
+        try:
+            # Parse the JavaScript array as JSON
+            # Handle JavaScript object format
+            events_text = re.sub(r'(\w+):', r'"\1":', events_text)  # Quote unquoted property names
+            events_text = re.sub(r"'([^']*)'", r'"\1"', events_text)  # Convert single quotes to double
+            
+            # Parse as JSON
+            events_data = json.loads(events_text)
+            
+            for event_data in events_data:
+                if isinstance(event_data, dict):
+                    # Decode Unicode escapes in title and comment
+                    title = self._decode_unicode_escapes(event_data.get('title', ''))
+                    comment = self._decode_unicode_escapes(event_data.get('comment', ''))
+                    
+                    event = CalendarEvent(
+                        date=event_data.get('start', ''),
+                        title=title,
+                        description=comment if comment and comment != title else None,
+                        event_id=event_data.get('id', ''),
+                        color=event_data.get('color', ''),
+                        event_type=self._determine_event_type_from_title(title)
+                    )
+                    events.append(event)
+                    
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f"Warning: Failed to parse calendar events with JSON: {e}", file=sys.stderr)
+            # Fallback: try to extract events manually with regex
+            events = self._extract_events_manual(html_content)
+        
+        return events
+
+    def _extract_events_manual(self, html_content: str) -> List[CalendarEvent]:
+        """Manually extract events using regex when JSON parsing fails"""
+        events = []
+        
+        # Look for individual event objects in the JavaScript
+        # This regex handles the actual format with escaped quotes
+        event_pattern = r'\{\s*"title":\s*"([^"]*)",\s*"start":\s*"([^"]*)"[^}]*?"comment":\s*"([^"]*)"[^}]*?\}'
+        matches = re.findall(event_pattern, html_content, re.DOTALL)
+        
+        for title, start_date, comment in matches:
+            # Decode Unicode escapes
+            title = self._decode_unicode_escapes(title)
+            comment = self._decode_unicode_escapes(comment)
+            
+            event = CalendarEvent(
+                date=start_date,
+                title=title,
+                description=comment if comment != title else None,
+                event_type=self._determine_event_type_from_title(title)
+            )
+            events.append(event)
+        
+        return events
+
+    def _determine_event_type_from_title(self, title: str) -> str:
+        """Determine event type based on title content"""
+        title_lower = title.lower()
+        
+        if any(word in title_lower for word in ['kartkówka', 'kartkowka']):
+            return 'quiz'
+        elif any(word in title_lower for word in ['sprawdzian', 'test']):
+            return 'test'
+        elif any(word in title_lower for word in ['spotkanie', 'rodzic']):
+            return 'meeting'
+        elif any(word in title_lower for word in ['uroczysty', 'strój', 'ceremonia']):
+            return 'ceremony'
+        elif any(word in title_lower for word in ['dyktando']):
+            return 'dictation'
+        elif any(word in title_lower for word in ['dzień wolny', 'wolny', 'święto']):
+            return 'holiday'
+        elif any(word in title_lower for word in ['zakończenie', 'koniec']):
+            return 'end_of_term'
+        elif any(word in title_lower for word in ['ocen', 'wystawienie']):
+            return 'grades'
+        else:
+            return 'other'
+
     def get_schedule(self) -> Dict[str, List[Lesson]]:
+        """Get the weekly schedule from planlekcji"""
         response = self.session.get(f"{self.BASE_URL}/planlekcji?typ=podstawowy")
         response.raise_for_status()
         
@@ -188,6 +326,14 @@ class MobiClient:
             
         return schedule
 
+    def get_calendar_events(self) -> List[CalendarEvent]:
+        """Get calendar events from kalendarzklasowy"""
+        response = self.session.get(f"{self.BASE_URL}/kalendarzklasowy")
+        response.raise_for_status()
+        
+        events = self._extract_calendar_events(response.text)
+        return sorted(events, key=lambda x: x.date)
+
 def convert_schedule_to_dict(schedule: Dict[str, List[Lesson]]) -> dict:
     """Convert schedule to a dictionary suitable for JSON serialization"""
     return {
@@ -195,27 +341,45 @@ def convert_schedule_to_dict(schedule: Dict[str, List[Lesson]]) -> dict:
         for day, lessons in schedule.items()
     }
 
+def convert_events_to_dict(events: List[CalendarEvent]) -> list:
+    """Convert events to a list suitable for JSON serialization"""
+    return [asdict(event) for event in events]
+
 def main():
-    parser = argparse.ArgumentParser(description="Get weekly schedule from MobiDziennik")
+    parser = argparse.ArgumentParser(description="Get schedule and calendar from MobiDziennik")
     parser.add_argument('-u', '--user', required=True, help='Username/email')
     parser.add_argument('-p', '--password', required=True, help='Password')
+    parser.add_argument('--schedule', action='store_true', help='Get weekly schedule')
+    parser.add_argument('--calendar', action='store_true', help='Get calendar events')
     parser.add_argument('--pretty', action='store_true', help='Pretty print JSON output')
     
     args = parser.parse_args()
     
+    # Default to schedule if neither specified
+    if not args.schedule and not args.calendar:
+        args.schedule = True
+    
     try:
         client = MobiClient(args.user, args.password)
-        schedule = client.get_schedule()
-        schedule_dict = convert_schedule_to_dict(schedule)
+        result = {}
         
+        if args.schedule:
+            schedule = client.get_schedule()
+            result['schedule'] = convert_schedule_to_dict(schedule)
+        
+        if args.calendar:
+            events = client.get_calendar_events()
+            result['events'] = convert_events_to_dict(events)
+        
+        # Use ensure_ascii=False to properly output UTF-8 characters
         if args.pretty:
-            print(json.dumps(schedule_dict, indent=2, ensure_ascii=False))
+            print(json.dumps(result, indent=2, ensure_ascii=False))
         else:
-            print(json.dumps(schedule_dict, ensure_ascii=False))
+            print(json.dumps(result, ensure_ascii=False))
             
     except Exception as e:
         error_dict = {"error": str(e)}
-        print(json.dumps(error_dict), file=sys.stderr)
+        print(json.dumps(error_dict, ensure_ascii=False), file=sys.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":

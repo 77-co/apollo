@@ -11,6 +11,8 @@ import { transcribeStream, synthesise } from "./speech.js";
 import settings from "./settings/settings.js";
 import memos from "./memos/index.js";
 import { RSSManager } from './rss/index.js';
+import MobidziennikService from './assistant/plugins/mobidziennik/events.js';
+
 
 
 import { SpotifyClient } from "./spotify/index.js";
@@ -38,6 +40,72 @@ export function setup(mainWindow) {
             }
         }
     );
+
+    // Mobidziennik events
+
+    ipcMain.handle("mobi-get-events", async (event, params = {}) => {
+        try {
+            const result = await MobidziennikService.execute(params);
+            return {
+                success: true,
+                data: result
+            };
+        } catch (error) {
+            console.error('Mobidziennik get events error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("mobi-get-upcoming", async (event, params = {}) => {
+        try {
+            const result = await MobidziennikService.getUpcoming(params);
+            return {
+                success: true,
+                data: result
+            };
+        } catch (error) {
+            console.error('Mobidziennik get upcoming error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("mobi-get-by-type", async () => {
+        try {
+            const result = await MobidziennikService.getByType();
+            return {
+                success: true,
+                data: result
+            };
+        } catch (error) {
+            console.error('Mobidziennik get by type error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("mobi-get-date-range", async (event, params = {}) => {
+        try {
+            const result = await MobidziennikService.getDateRange(params);
+            return {
+                success: true,
+                data: result
+            };
+        } catch (error) {
+            console.error('Mobidziennik get date range error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
 
     // RSS
     const rssManager = new RSSManager();

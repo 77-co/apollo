@@ -315,7 +315,39 @@
                     </div>
                     
                     <div class="news-feed">
-                        <!-- Articles will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="app" id="mobidziennikApp">
+                <span class="appTitle">Mobidziennik</span>
+                <div class="mobi-content">
+                    <div class="mobi-filters">
+                        <div class="filter-list">
+                            <div class="filter-item active" data-filter="upcoming">
+                                <span class="material-symbols-outlined">event_upcoming</span>
+                                <span>Nadchodzące</span>
+                            </div>
+                            <div class="filter-item" data-filter="today">
+                                <span class="material-symbols-outlined">today</span>
+                                <span>Dzisiaj</span>
+                            </div>
+                            <div class="filter-item" data-filter="tomorrow">
+                                <span class="material-symbols-outlined">event</span>
+                                <span>Jutro</span>
+                            </div>
+                            <div class="filter-item" data-filter="quiz">
+                                <span class="material-symbols-outlined">quiz</span>
+                                <span>Sprawdziany</span>
+                            </div>
+                            <div class="filter-item" data-filter="test">
+                                <span class="material-symbols-outlined">assignment</span>
+                                <span>Testy</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mobi-events">
                     </div>
                 </div>
             </div>
@@ -407,6 +439,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="widget sm" id="spotify">
                     <div class="spotifyLoginAlert active"
                         onclick="openApp('settings', $(this).parent().get(0));animateContentChange('spotifySettings')">
@@ -425,6 +458,27 @@
                         <button><span class="material-symbols-outlined fill">skip_previous</span></button>
                         <button><span class="material-symbols-outlined fill">play_arrow</span></button>
                         <button><span class="material-symbols-outlined fill">skip_next</span></button>
+                    </div>
+                </div>
+                <div class="widget sm" id="mobidziennik" onclick="openApp('mobidziennikApp', this)">
+                    <div class="mobiLoginAlert active">
+                        <p>Ładowanie wydarzeń z Mobidziennika...</p>
+                    </div>
+                    
+                    <div class="widget-header">
+                        <img src="https://play-lh.googleusercontent.com/WHn_-Bt64YIhAwZT36THXR-ITadN51UOVP5oCS4GxKie44cQle1_XiArIm55zEDdrug2" alt="Mobidziennik" class="mobi-logo">
+                        <div class="widget-title">
+                            <h3>Mobidziennik</h3>
+                            <span class="next-event-indicator">Następne wydarzenie</span>
+                        </div>
+                    </div>
+                    
+                    <div class="current-event">
+                        <h4 class="event-title"></h4>
+                        <div class="event-meta">
+                            <span class="event-date"></span>
+                            <span class="event-type"></span>
+                        </div>
                     </div>
                 </div>
                 <div class="widget xl" id="calendar">
@@ -590,6 +644,7 @@
     <script src="./assets/js/apps.js"></script>
     <script src="./assets/js/screensaver.js"></script>
 
+    <script src="./assets/js/services/mobidziennik.js"></script>
     <script src="./assets/js/services/link.js"></script>
     <script src="./assets/js/services/time.js"></script>
     <script src="./assets/js/services/weather.js"></script>
