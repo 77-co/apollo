@@ -101,9 +101,15 @@
 
 #spotify {
     display: flex;
+    flex-direction: column;
     gap: 0.75rem;
 
     background-image: radial-gradient(ellipse at bottom right, rgba(28, 215, 96, 0.6), transparent 70%);
+}
+
+#spotify .main-content {
+    display: flex;
+    gap: 0.75rem;
 }
 
 #spotify img {
@@ -201,6 +207,70 @@
     scale: 0.7;
 }
 
+#spotify .volume-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.25rem;
+}
+
+#spotify .volume-icon {
+    color: var(--theme-fg-1);
+    opacity: 0.8;
+    font-size: 1.2rem;
+    min-width: 1.2rem;
+}
+
+#spotify .volume-bar {
+    flex: 1;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+    transition: height 0.2s ease;
+}
+
+#spotify .volume-bar:hover {
+    height: 6px;
+}
+
+#spotify .volume-fill {
+    height: 100%;
+    background-color: var(--theme-fg-1);
+    border-radius: 2px;
+    width: 50%;
+    transition: width 0.1s ease;
+    position: relative;
+}
+
+#spotify .volume-fill::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background-color: var(--theme-fg-1);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+#spotify .volume-bar:hover .volume-fill::after {
+    opacity: 1;
+}
+
+#spotify .volume-percentage {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--theme-fg-1);
+    opacity: 0.8;
+    min-width: 2rem;
+    text-align: right;
+}
+
 #spotify .spotifyLoginAlert,
 #spotify .spotifyDeviceAlert {
     position: absolute;
@@ -220,6 +290,8 @@
 #spotify .spotifyDeviceAlert {
     z-index: 2;
 }
+
+
 
 /* Calendar */
 #calendar {

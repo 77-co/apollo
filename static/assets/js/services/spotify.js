@@ -14,12 +14,20 @@ class SpotifyWidget {
         this.prevButton = this.widget.querySelector('.controls button:nth-child(1)');
         this.nextButton = this.widget.querySelector('.controls button:nth-child(3)');
         
+        // Volume control elements
+        this.volumeBar = this.widget.querySelector('.volume-bar');
+        this.volumeFill = this.widget.querySelector('.volume-fill');
+        this.volumeIcon = this.widget.querySelector('.volume-icon');
+        this.volumePercentage = this.widget.querySelector('.volume-percentage');
+        
         this.isPlaying = false;
+        this.currentVolume = 50; // Default volume
         this.updateInterval = null;
         this.devicePollInterval = null;
         this.currentTrackId = null;
         this.animations = {};
         this.currentImageUrl = null;
+        this.isDragging = false;
 
         this.device = null;
         
@@ -31,6 +39,7 @@ class SpotifyWidget {
         this.initializeSpotify();
         this.setupEventListeners();
         this.setupAnimations();
+        this.setupVolumeControl();
     }
 
     setupAnimations() {
@@ -65,6 +74,76 @@ class SpotifyWidget {
             duration: 150,
             easing: 'easeInSine'
         };
+    }
+
+    setupVolumeControl() {
+        // Volume bar click and drag
+        const handleVolumeChange = (e) => {
+            const rect = this.volumeBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percentage = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
+            this.setVolume(Math.round(percentage));
+        };
+
+        // Click to set volume
+        this.volumeBar.addEventListener('click', handleVolumeChange);
+
+        // Drag to set volume
+        this.volumeBar.addEventListener('mousedown', (e) => {
+            this.isDragging = true;
+            handleVolumeChange(e);
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (this.isDragging) {
+                handleVolumeChange(e);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            this.isDragging = false;
+        });
+
+        // Volume icon click to mute/unmute
+        this.volumeIcon.addEventListener('click', () => {
+            if (this.currentVolume > 0) {
+                this.previousVolume = this.currentVolume;
+                this.setVolume(0);
+            } else {
+                this.setVolume(this.previousVolume || 50);
+            }
+        });
+
+        // Initialize volume display
+        this.updateVolumeDisplay(this.currentVolume);
+    }
+
+    async setVolume(volume) {
+        try {
+            const response = await window.backend.spotify.setVolume(volume);
+            if (response.success) {
+                this.currentVolume = volume;
+                this.updateVolumeDisplay(volume);
+            }
+        } catch (error) {
+            console.error('Failed to set volume:', error);
+        }
+    }
+
+    updateVolumeDisplay(volume) {
+        this.currentVolume = volume;
+        this.volumeFill.style.width = `${volume}%`;
+        this.volumePercentage.textContent = `${volume}%`;
+        
+        // Update volume icon based on level
+        if (volume === 0) {
+            this.volumeIcon.textContent = 'volume_off';
+        } else if (volume < 30) {
+            this.volumeIcon.textContent = 'volume_down';
+        } else {
+            this.volumeIcon.textContent = 'volume_up';
+        }
     }
 
     async initializeSpotify() {
@@ -262,10 +341,21 @@ class SpotifyWidget {
             }
 
             if (stateResponse?.success && stateResponse?.result?.state) {
-                const newIsPlaying = stateResponse.result.state.is_playing;
+                const state = stateResponse.result.state;
+                const newIsPlaying = state.is_playing;
+                
+                // Update playback state
                 if (this.isPlaying !== newIsPlaying) {
                     this.isPlaying = newIsPlaying;
                     this.updatePlayButton();
+                }
+
+                // Update volume if device supports it and volume changed
+                if (state.device?.supports_volume && state.device?.volume_percent !== undefined) {
+                    const deviceVolume = state.device.volume_percent;
+                    if (deviceVolume !== this.currentVolume) {
+                        this.updateVolumeDisplay(deviceVolume);
+                    }
                 }
             }
         } catch (error) {

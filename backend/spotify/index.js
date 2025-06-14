@@ -269,7 +269,8 @@ export class SpotifyClient extends EventEmitter {
 
     async setVolume(volumePercent) {
         const deviceId = await this._ensureDevice();
-        await this._apiRequest('PUT', '/me/player/volume', { volume_percent: volumePercent });
+        const query = `?volume_percent=${volumePercent}&device_id=${deviceId}`;
+        await this._apiRequest('PUT', `/me/player/volume${query}`);
     }
 
     async setRepeatMode(state) {

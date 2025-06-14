@@ -448,25 +448,35 @@
                     <div class="spotifyDeviceAlert active">
                         <p>Aby sterować odtwarzaniem Spotify, musisz uruchomić odtwarzanie na jakimś urządzeniu.</p>
                     </div>
-        
-                    <img src="https://placehold.co/512x512" alt="">
-                    <div class="meta">
-                        <span class="title"><span class="text"></span></span>
-                        <span class="author"><span class="text"></span></spanb>
+
+                    <div class="main-content">
+                        <img src="https://placehold.co/512x512" alt="">
+                        <div class="meta">
+                            <span class="title"><span class="text"></span></span>
+                            <span class="author"><span class="text"></span></span>
+                        </div>
+                        <div class="controls">
+                            <button><span class="material-symbols-outlined fill">skip_previous</span></button>
+                            <button><span class="material-symbols-outlined fill">play_arrow</span></button>
+                            <button><span class="material-symbols-outlined fill">skip_next</span></button>
+                        </div>
                     </div>
-                    <div class="controls">
-                        <button><span class="material-symbols-outlined fill">skip_previous</span></button>
-                        <button><span class="material-symbols-outlined fill">play_arrow</span></button>
-                        <button><span class="material-symbols-outlined fill">skip_next</span></button>
+                    
+                    <div class="volume-container">
+                        <span class="material-symbols-outlined volume-icon">volume_up</span>
+                        <div class="volume-bar">
+                            <div class="volume-fill"></div>
+                        </div>
+                        <span class="volume-percentage">50%</span>
                     </div>
                 </div>
+
                 <div class="widget sm" id="mobidziennik" onclick="openApp('mobidziennikApp', this)">
                     <div class="mobiLoginAlert active">
                         <p>Ładowanie wydarzeń z Mobidziennika...</p>
                     </div>
                     
                     <div class="widget-header">
-                        <img src="https://play-lh.googleusercontent.com/WHn_-Bt64YIhAwZT36THXR-ITadN51UOVP5oCS4GxKie44cQle1_XiArIm55zEDdrug2" alt="Mobidziennik" class="mobi-logo">
                         <div class="widget-title">
                             <h3>Mobidziennik</h3>
                             <span class="next-event-indicator">Następne wydarzenie</span>
