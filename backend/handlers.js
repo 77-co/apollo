@@ -605,6 +605,7 @@ export function setup(mainWindow) {
             });
 
             const result = await CalendarService.initialize();
+
             return { success: true, ...result };
         } catch (error) {
             return { success: false, error: error.message };
@@ -704,6 +705,7 @@ export function setup(mainWindow) {
 
     ipcMain.handle("calendar-get-upcoming-events", async (event) => {
         const calendars = await handleCalendarCall(() => CalendarService.getCalendarList());
+        console.log(calendars);
 
         const now = new Date().toISOString();
 
@@ -719,8 +721,6 @@ export function setup(mainWindow) {
                 }));
             })
         );
-
-        console.log(allEvents);
 
         // Flatten and sort all events by start time
         const upcomingEvents = allEvents.flat().sort((a, b) => {

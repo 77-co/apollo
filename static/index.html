@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +21,7 @@
         document.addEventListener("DOMContentLoaded", (event) => {
             gsap.registerPlugin(TextPlugin)
         });
-       </script>
+    </script>
     <script src="./assets/js/screensaver-gradient.js"></script>
 
     <script src="./assets/js/animator.js"></script>
@@ -34,6 +35,7 @@
     <link rel="stylesheet" href="./assets/css/dialogue.css">
     <link rel="stylesheet" href="./assets/css/notification.css">
 </head>
+
 <body>
     <!-- <div class="dialog">
         <div class="header">
@@ -59,7 +61,7 @@
 
     <div class="bodyWrapper">
         <div class="dialogueContainer">
-            
+
         </div>
         <div class="apps" id="apps">
             <div class="apolloOverlay">
@@ -122,15 +124,26 @@
                 <span class="appTitle">Ustawienia</span>
                 <div class="categories">
                     <span class="category" data-category-id="aiSettings"><span
-                        class="material-symbols-outlined fill">network_intelligence</span>Apollo AI</span>
+                            class="material-symbols-outlined fill">network_intelligence</span>Apollo AI</span>
+
                     <span class="category" data-category-id="uiSettings"><span
                             class="material-symbols-outlined fill">brush</span>Wygląd</span>
+
+                    <span class="category" data-category-id="screensaverSettings"><span
+                            class="material-symbols-outlined fill">smart_display</span>Wyg. ekranu</span>
+
+                    <span class="category" data-category-id="powerSettings"><span
+                            class="material-symbols-outlined fill">eco</span>Zasilanie</span>
+
                     <span class="category" data-category-id="speechSettings"><span
                             class="material-symbols-outlined fill">mic</span>Mowa</span>
+
                     <span class="category" data-category-id="wifiSettings"><span
                             class="material-symbols-outlined fill">wifi</span>Wi-Fi</span>
+
                     <span class="category" data-category-id="spotifySettings"><span
                             class="material-symbols-outlined fill">music_note</span>Spotify</span>
+
                     <span class="category" data-category-id="linkSettings"><span
                             class="material-symbols-outlined fill">link</span>Apollo Link</span>
                 </div>
@@ -139,11 +152,12 @@
                         <div class="setting-row">
                             <div class="setting-text">
                                 <h3 class="setting-title">Tryb realtime</h3>
-                                <p class="setting-description">Prowadź płynną konwersację, bez powtórnych wybudzeń słowem "Apollo" i czekania na odpowiedź.</p>
+                                <p class="setting-description">Prowadź płynną konwersację, bez powtórnych wybudzeń
+                                    słowem "Apollo" i czekania na odpowiedź.</p>
                             </div>
                             <label class="toggle-switch">
-                                <input type="checkbox" onclick="setting(this)"
-                                    class="setting" data-setting-key="ai.realtime">
+                                <input type="checkbox" onclick="setting(this)" class="setting"
+                                    data-setting-key="ai.realtime">
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -153,8 +167,8 @@
                                 <p class="setting-description">Apollo będzie zwracać się do Ciebie osobiście.</p>
                             </div>
                             <div class="input-wrapper">
-                                <input type="text" onchange="setting(this)"
-                                    class="setting input" data-setting-key="ai.name">
+                                <input type="text" onchange="setting(this)" class="setting input"
+                                    data-setting-key="ai.name">
                             </div>
                         </div>
                     </div>
@@ -162,7 +176,8 @@
                         <div class="setting-row">
                             <div class="setting-text">
                                 <h3 class="setting-title">Tryb ciemny</h3>
-                                <p class="setting-description">Oszczędź oczu używając wygodniejszej alternatywy do domyślnego
+                                <p class="setting-description">Oszczędź oczu używając wygodniejszej alternatywy do
+                                    domyślnego
                                     motywu.</p>
                             </div>
                             <label class="toggle-switch">
@@ -187,7 +202,8 @@
                         <div class="setting-row">
                             <div class="setting-text">
                                 <h3 class="setting-title">Głos Apollo</h3>
-                                <p class="setting-description">Apollo będzie używać poniższego głosu, gdy wypowiadanie na głos jest włączone.</p>
+                                <p class="setting-description">Apollo będzie używać poniższego głosu, gdy wypowiadanie
+                                    na głos jest włączone.</p>
                             </div>
                             <div class="select-wrapper">
                                 <select class="select setting" onchange="setting(this)" data-setting-key="speech.voice">
@@ -210,7 +226,8 @@
                         <div class="setting-row">
                             <div class="setting-text">
                                 <h3 class="setting-title">Sieć</h3>
-                                <p class="setting-description">Wybierz sieć Wi-Fi której ma używać Apollo. Będzie on wymagać jej do prawidłowego funkcjonowania.</p>
+                                <p class="setting-description">Wybierz sieć Wi-Fi której ma używać Apollo. Będzie on
+                                    wymagać jej do prawidłowego funkcjonowania.</p>
                             </div>
                             <div class="scan-list">
                                 <div class="el active">
@@ -231,13 +248,14 @@
                         <div class="spotifyDeviceAlert active">
                             <p>Aby sterować odtwarzaniem Spotify, musisz uruchomić odtwarzanie na jakimś urządzeniu.</p>
                         </div>
-        
+
                         <p>Jeśli to widzisz to znaczy, że pomyślnie udało ci się połączyć konto Spotify!</p>
                     </div>
-                    
+
                     <div class="category" id="linkSettings">
                         <div class="linkLoginAlert" id="linkLoginAlert">
-                            <span class="material-symbols-outlined" id="closeLoginAlert" onclick="$(this).parent().removeClass('active')">close</span>
+                            <span class="material-symbols-outlined" id="closeLoginAlert"
+                                onclick="$(this).parent().removeClass('active')">close</span>
                             <div class="qrBlur" id="linkQrBlur">
                                 <span>Kontynuuj logowanie na telefonie</span>
                                 <button onclick="$(this).parent().removeClass('active')">Pokaż kod QR</button>
@@ -249,7 +267,8 @@
                         <div class="setting-row">
                             <div class="setting-text">
                                 <h3 class="setting-title">Integracje</h3>
-                                <p class="setting-description">Apollo Link umożliwia łączenie kont w codziennych serwisach z Apollo, by
+                                <p class="setting-description">Apollo Link umożliwia łączenie kont w codziennych
+                                    serwisach z Apollo, by
                                     korzystać z wygodnych opcji.</p>
                             </div>
                             <div class="link-list">
@@ -282,14 +301,14 @@
                 <span class="appTitle">Notatki</span>
                 <div class="noteView">
                     <div class="noteList"></div>
-                    
+
                     <div class="noteViewer">
                         <span id="noteTitle"></span>
                         <p id="noteContents"></p>
                     </div>
                 </div>
             </div>
-            
+
             <div class="app" id="newsApp">
                 <span class="appTitle">Aktualności</span>
                 <div class="news-content">
@@ -313,7 +332,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="news-feed">
                     </div>
                 </div>
@@ -346,14 +365,14 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="mobi-events">
                     </div>
                 </div>
             </div>
 
         </div>
-        
+
         <div class="container" id="uiContainer">
             <div class="col">
                 <div class="widget sm" id="time" onclick="openApp('timeApp', this)">
@@ -461,7 +480,7 @@
                             <button><span class="material-symbols-outlined fill">skip_next</span></button>
                         </div>
                     </div>
-                    
+
                     <div class="volume-container">
                         <span class="material-symbols-outlined volume-icon">volume_up</span>
                         <div class="volume-bar">
@@ -475,14 +494,14 @@
                     <div class="mobiLoginAlert active">
                         <p>Ładowanie wydarzeń z Mobidziennika...</p>
                     </div>
-                    
+
                     <div class="widget-header">
                         <div class="widget-title">
                             <h3>Mobidziennik</h3>
                             <span class="next-event-indicator">Następne wydarzenie</span>
                         </div>
                     </div>
-                    
+
                     <div class="current-event">
                         <h4 class="event-title"></h4>
                         <div class="event-meta">
@@ -492,6 +511,8 @@
                     </div>
                 </div>
                 <div class="widget xl" id="calendar">
+                    <div id="calendar-error" class="calendar-error"></div>
+
                     <div class="header">
                         <button class="nav-button" onclick="changeWeek(-1)">
                             <span class="material-symbols-outlined">chevron_left</span>
@@ -501,7 +522,7 @@
                             <span class="material-symbols-outlined">chevron_right</span>
                         </button>
                     </div>
-                    
+
                     <div class="weekdays">
                         <div class="weekday">Nd</div>
                         <div class="weekday">Pn</div>
@@ -511,22 +532,15 @@
                         <div class="weekday">Pt</div>
                         <div class="weekday">Sb</div>
                     </div>
-                    
+
                     <div class="week-container">
                         <div class="week" id="currentWeek"></div>
                     </div>
-                    
+
                     <div class="today-info">
                         <div class="today-date" id="todayDate"></div>
-                        <div class="events">
-                            <div class="event">
-                                <span class="material-symbols-outlined">event</span>
-                                <span>Spotkanie zespołu - 14:00</span>
-                            </div>
-                            <div class="event">
-                                <span class="material-symbols-outlined">notifications</span>
-                                <span>Przypomnienie - 16:30</span>
-                            </div>
+                        <div class="events" id="todayEvents">
+                            <!-- Today's events will be populated here -->
                         </div>
                     </div>
                 </div>
@@ -535,17 +549,17 @@
                     <div class="rssLoginAlert active">
                         <p>Ładowanie wiadomości RSS...</p>
                     </div>
-                    
+
                     <div class="header">
                         <h2>Aktualności</h2>
                         <span class="source"></span>
                     </div>
-                    
+
                     <div class="current-news">
                         <h3 class="headline"></h3>
                         <span class="timestamp"></span>
                     </div>
-                    
+
                     <div class="progress-container">
                         <div class="article-counter">
                             <span class="current">1</span>
@@ -566,7 +580,7 @@
                     <span class="prompt-intro">Powiedz</span>
                     <span id="examplePrompt" class="example-prompt"></span>
                 </div>
-        
+
                 <!-- Combined Listening and Processing Screen -->
                 <div class="screen listeningProcessingScreen">
                     <span class="prompt-intro">Słucham...</span>
@@ -577,7 +591,7 @@
                         <div class="circle"></div>
                     </div>
                 </div>
-        
+
                 <!-- Chat Screen -->
                 <div class="screen chatScreen">
                     <div id="chatContainer" class="chat-container">

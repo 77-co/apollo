@@ -1,26 +1,30 @@
-import { google } from 'googleapis';
-import EventEmitter from 'events';
-import QRCode from 'qrcode';
-import axios from 'axios';
-import { EventSource } from 'eventsource';
-import { getIntegrations, setIntegration } from '../link/link.js';
+import { google } from "googleapis";
+import EventEmitter from "events";
+import QRCode from "qrcode";
+import axios from "axios";
+import { EventSource } from "eventsource";
+import { getIntegrations, setIntegration } from "../link/link.js";
 
 export default class GoogleCalendarClient extends EventEmitter {
     constructor(config = {}) {
         super();
         this.config = {
-            authServerUrl: config.authServerUrl || `${process.env.API_BASE_URL}/google`,
+            authServerUrl:
+                config.authServerUrl || `${process.env.API_BASE_URL}/google`,
             autoRefresh: config.autoRefresh !== false,
             refreshThreshold: config.refreshThreshold || 300,
             tokenRefreshPadding: config.tokenRefreshPadding || 60,
-            scopes: config.scopes || ['https://www.googleapis.com/auth/calendar']
+            scopes: config.scopes || [
+                "https://www.googleapis.com/auth/calendar",
+            ],
         };
 
         const integration = getIntegrations().google;
         this.accessToken = integration?.accessToken;
         this.refreshToken = integration?.refreshToken;
         this.expiresAt = integration?.expiresAt;
-        
+        console.log(integration);
+
         this.calendar = null;
         this.auth = null;
         this.refreshTimeout = null;
@@ -33,52 +37,61 @@ export default class GoogleCalendarClient extends EventEmitter {
 
     async initialize() {
         if (this.accessToken && this.refreshToken && this.expiresAt) {
-            this.emit('authInitialized', { authUrl: '', qrCode: '' });
+            this.emit("authInitialized", { authUrl: "", qrCode: "" });
+            console.log("bb");
             await this._handleAuthenticationSuccess({
                 access_token: this.accessToken,
                 refresh_token: this.refreshToken,
-                expires_at: this.expiresAt
+                expires_at: this.expiresAt,
             });
-            return new Promise((resolve) => resolve({ success: true }));
+            console.log("aa");
+            return { success: true };
         }
 
         try {
-            const response = await axios.get(`${this.config.authServerUrl}/start-auth`);
+            const response = await axios.get(
+                `${this.config.authServerUrl}/start-auth`
+            );
             const { state, url } = response.data;
 
             const qrCode = await QRCode.toDataURL(url);
-            this.emit('authInitialized', { authUrl: url, qrCode });
+            this.emit("authInitialized", { authUrl: url, qrCode });
 
-            this.eventSource = new EventSource(`${this.config.authServerUrl}/sse/${state}`);
+            this.eventSource = new EventSource(
+                `${this.config.authServerUrl}/sse/${state}`
+            );
 
-            return new Promise((resolve, reject) => {
-                this.eventSource.onmessage = async (event) => {
-                    const data = JSON.parse(event.data);
-                    
-                    if (data.status === 'keep-alive') return;
-                    
-                    if (data.status === 'URL visited') {
-                        this.emit('authUrlVisited');
-                    }
-                    
-                    if (data.status === 'User logged in') {
-                        this.eventSource.close();
-                        await this._handleAuthenticationSuccess({
-                            access_token: data.access_token,
-                            refresh_token: data.refresh_token,
-                            expires_in: data.expires_in
-                        });
-                        resolve({ success: true });
-                    }
-                };
+            this.eventSource.onmessage = async (event) => {
+                const data = JSON.parse(event.data);
 
-                this.eventSource.onerror = (error) => {
+                if (data.status === "keep-alive") return;
+
+                if (data.status === "URL visited") {
+                    this.emit("authUrlVisited");
+                }
+
+                if (data.status === "User logged in") {
                     this.eventSource.close();
-                    reject(new Error('Authentication failed: SSE connection error'));
-                };
-            });
+                    await this._handleAuthenticationSuccess({
+                        access_token: data.access_token,
+                        refresh_token: data.refresh_token,
+                        expires_in: data.expires_in,
+                    });
+                    return { success: true };
+                }
+            };
+
+            this.eventSource.onerror = (error) => {
+                this.eventSource.close();
+                console.error(
+                    new Error("Authentication failed: SSE connection error")
+                );
+            };
         } catch (error) {
-            this.emit('error', new Error(`Auth initialization failed: ${error.message}`));
+            this.emit(
+                "error",
+                new Error(`Auth initialization failed: ${error.message}`)
+            );
             throw error;
         }
     }
@@ -87,13 +100,13 @@ export default class GoogleCalendarClient extends EventEmitter {
         this.accessToken = tokens.access_token;
         this.refreshToken = tokens.refresh_token;
         if (!this.expiresAt) {
-            this.expiresAt = Date.now() + (tokens.expires_in * 1000);
+            this.expiresAt = Date.now() + tokens.expires_in * 1000;
         }
 
-        setIntegration('google', {
+        setIntegration("google", {
             accessToken: this.accessToken,
             refreshToken: this.refreshToken,
-            expiresAt: this.expiresAt
+            expiresAt: this.expiresAt,
         });
 
         if (this.config.autoRefresh) {
@@ -101,7 +114,7 @@ export default class GoogleCalendarClient extends EventEmitter {
         }
 
         await this._initializeGoogleCalendar();
-        this.emit('authenticated', { expiresAt: this.expiresAt });
+        this.emit("authenticated", { expiresAt: this.expiresAt });
     }
 
     async _refreshAccessToken() {
@@ -109,7 +122,7 @@ export default class GoogleCalendarClient extends EventEmitter {
             const response = await axios.post(
                 `${this.config.authServerUrl}/refresh-token`,
                 {
-                    refresh_token: this.refreshToken
+                    refresh_token: this.refreshToken,
                 }
             );
 
@@ -117,15 +130,17 @@ export default class GoogleCalendarClient extends EventEmitter {
             if (response.data.refresh_token) {
                 this.refreshToken = response.data.refresh_token;
             }
-            this.expiresAt = Date.now() + (response.data.expires_in * 1000);
+
+            console.log(response.data);
+            this.expiresAt = Date.now() + response.data.expires_in * 1000;
 
             if (this.config.autoRefresh) {
                 this._scheduleTokenRefresh();
             }
 
-            this.emit('tokenRefreshed', { expiresAt: this.expiresAt });
+            this.emit("tokenRefreshed", { expiresAt: this.expiresAt });
         } catch (error) {
-            this.emit('error', new Error('Token refresh failed'));
+            this.emit("error", new Error("Token refresh failed"));
             throw error;
         }
     }
@@ -135,19 +150,21 @@ export default class GoogleCalendarClient extends EventEmitter {
             clearTimeout(this.refreshTimeout);
         }
 
-        const timeUntilRefresh = this.expiresAt - Date.now() - 
-            (this.config.refreshThreshold * 1000) - 
-            (this.config.tokenRefreshPadding * 1000);
+        const timeUntilRefresh =
+            this.expiresAt -
+            Date.now() -
+            this.config.refreshThreshold * 1000 -
+            this.config.tokenRefreshPadding * 1000;
 
         if (timeUntilRefresh > 0) {
             this.refreshTimeout = setTimeout(() => {
-                this._refreshAccessToken().catch(error => {
-                    this.emit('error', error);
+                this._refreshAccessToken().catch((error) => {
+                    this.emit("error", error);
                 });
             }, timeUntilRefresh);
         } else {
-            this._refreshAccessToken().catch(error => {
-                this.emit('error', error);
+            this._refreshAccessToken().catch((error) => {
+                this.emit("error", error);
             });
         }
     }
@@ -157,11 +174,11 @@ export default class GoogleCalendarClient extends EventEmitter {
         this.auth.setCredentials({
             access_token: this.accessToken,
             refresh_token: this.refreshToken,
-            expiry_date: this.expiresAt
+            expiry_date: this.expiresAt,
         });
 
-        this.calendar = google.calendar({ version: 'v3', auth: this.auth });
-        this.emit('ready');
+        this.calendar = google.calendar({ version: "v3", auth: this.auth });
+        this.emit("ready");
     }
 
     async _handleApiRequest(requestFn) {
@@ -183,7 +200,9 @@ export default class GoogleCalendarClient extends EventEmitter {
 
     _formatApiError(error) {
         if (error.errors?.[0]?.message) {
-            return new Error(`Google Calendar API Error: ${error.errors[0].message}`);
+            return new Error(
+                `Google Calendar API Error: ${error.errors[0].message}`
+            );
         }
         return error;
     }
@@ -207,50 +226,51 @@ export default class GoogleCalendarClient extends EventEmitter {
     async getCalendarList() {
         return this._handleApiRequest(async () => {
             const response = await this.calendar.calendarList.list();
+            console.log(response);
             return response.data.items;
         });
     }
 
-    async getEvents(calendarId = 'primary', options = {}) {
+    async getEvents(calendarId = "primary", options = {}) {
         return this._handleApiRequest(async () => {
             const response = await this.calendar.events.list({
                 calendarId,
                 timeMin: options.timeMin || new Date().toISOString(),
                 maxResults: options.maxResults || 10,
                 singleEvents: true,
-                orderBy: 'startTime',
-                ...options
+                orderBy: "startTime",
+                ...options,
             });
             return response.data.items;
         });
     }
 
-    async createEvent(calendarId = 'primary', event) {
+    async createEvent(calendarId = "primary", event) {
         return this._handleApiRequest(async () => {
             const response = await this.calendar.events.insert({
                 calendarId,
-                requestBody: event
+                requestBody: event,
             });
             return response.data;
         });
     }
 
-    async updateEvent(calendarId = 'primary', eventId, event) {
+    async updateEvent(calendarId = "primary", eventId, event) {
         return this._handleApiRequest(async () => {
             const response = await this.calendar.events.update({
                 calendarId,
                 eventId,
-                requestBody: event
+                requestBody: event,
             });
             return response.data;
         });
     }
 
-    async deleteEvent(calendarId = 'primary', eventId) {
+    async deleteEvent(calendarId = "primary", eventId) {
         return this._handleApiRequest(async () => {
             await this.calendar.events.delete({
                 calendarId,
-                eventId
+                eventId,
             });
             return true;
         });
@@ -259,7 +279,7 @@ export default class GoogleCalendarClient extends EventEmitter {
     async getCalendarById(calendarId) {
         return this._handleApiRequest(async () => {
             const response = await this.calendar.calendars.get({
-                calendarId
+                calendarId,
             });
             return response.data;
         });
@@ -268,7 +288,7 @@ export default class GoogleCalendarClient extends EventEmitter {
     async createCalendar(calendar) {
         return this._handleApiRequest(async () => {
             const response = await this.calendar.calendars.insert({
-                requestBody: calendar
+                requestBody: calendar,
             });
             return response.data;
         });
@@ -278,7 +298,7 @@ export default class GoogleCalendarClient extends EventEmitter {
         return this._handleApiRequest(async () => {
             const response = await this.calendar.calendars.update({
                 calendarId,
-                requestBody: calendar
+                requestBody: calendar,
             });
             return response.data;
         });
@@ -287,7 +307,7 @@ export default class GoogleCalendarClient extends EventEmitter {
     async deleteCalendar(calendarId) {
         return this._handleApiRequest(async () => {
             await this.calendar.calendars.delete({
-                calendarId
+                calendarId,
             });
             return true;
         });

@@ -216,8 +216,7 @@ const rss = {
 
 const integrations = {
     deintegrate: (integration) => ipcRenderer.invoke("deintegrate", integration),
-}
-
+};
 
 contextBridge.exposeInMainWorld('backend', {
     assistant: AssistantService,
