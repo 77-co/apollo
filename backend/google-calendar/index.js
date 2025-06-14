@@ -36,7 +36,7 @@ export default class GoogleCalendarClient extends EventEmitter {
     }
 
     async initialize() {
-        if (this.accessToken && this.refreshToken && this.expiresAt) {
+        if (this.accessToken && this.expiresAt) {
             this.emit("authInitialized", { authUrl: "", qrCode: "" });
             console.log("bb");
             await this._handleAuthenticationSuccess({
@@ -72,6 +72,7 @@ export default class GoogleCalendarClient extends EventEmitter {
 
                 if (data.status === "User logged in") {
                     this.eventSource.close();
+                    console.log(data);
                     await this._handleAuthenticationSuccess({
                         access_token: data.access_token,
                         refresh_token: data.refresh_token,
@@ -119,6 +120,8 @@ export default class GoogleCalendarClient extends EventEmitter {
 
     async _refreshAccessToken() {
         try {
+            if (!this.refreshToken) return; // TODO: Send a push notification to the user to re-authenticate
+
             const response = await axios.post(
                 `${this.config.authServerUrl}/refresh-token`,
                 {
