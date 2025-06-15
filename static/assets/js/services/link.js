@@ -21,8 +21,6 @@ class Integration {
             return;
         }
 
-        console.log(integrations);
-
         activeIntegrationLogin = classObject.integrationName;
         $('#linkLoginQRCode').attr('src', integrations[classObject.integrationName]?.qrcode);
         $('#linkLoginAlert').addClass('active');
@@ -46,7 +44,6 @@ class Integration {
     }
 
     confirmLogin() {
-        console.log('login');
         if (this.integrationName === activeIntegrationLogin)
             $('#linkQrBlur').addClass('active');
     }

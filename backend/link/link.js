@@ -11,6 +11,5 @@ export function setIntegration(integration, data) {
 }
 
 export function deintegrate(integration) {
-    console.log(integration);
     store.delete(`integrations.${integration}`);
 }

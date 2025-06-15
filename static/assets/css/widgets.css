@@ -297,19 +297,20 @@
 #calendar {
     display: flex;
     flex-direction: column;
-    background-image: 
+    background-image:
         radial-gradient(ellipse at top left, rgba(255, 87, 34, 0.6), transparent 70%),
         radial-gradient(ellipse at bottom right, rgba(255, 152, 0, 0.6), transparent 70%);
     border-radius: 1rem;
-    padding: 1.5rem;
+    padding: 0.5rem;
     box-sizing: border-box;
+    overflow: hidden; /* Prevents gradient bleed */
 }
 
 #calendar .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 #calendar .month-year {
@@ -367,10 +368,10 @@
 #calendar .week {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 0.1rem;
+    gap: 0.2rem; /* Added gap for better separation */
     position: absolute;
     width: 100%;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smoother transition */
     transform: translateX(0);
 }
 
@@ -378,17 +379,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 3rem;
-    border-radius: 0.4rem;
+    width: 3rem;
+    aspect-ratio: 1;
+    border-radius: 1rem;
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
+    border: 2px solid transparent; /* Prepare for selected state */
 }
 
 #calendar .day:hover {
     background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
 }
 
 #calendar .day.other-month {
@@ -396,49 +400,84 @@
 }
 
 #calendar .day.today {
-    background-color: rgba(255, 255, 255, 0.3);
     font-weight: 700;
+    /* Use a ring instead of a full background to allow selection visibility */
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* --- NEW --- Style for the actively selected day */
+#calendar .day.selected {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
 }
 
 #calendar .day.has-event::after {
     content: '';
     position: absolute;
-    bottom: 4px;
+    bottom: 6px;
     left: 50%;
     transform: translateX(-50%);
-    width: 4px;
-    height: 4px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background-color: var(--theme-fg-1);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
-#calendar .today-info {
+/* Updated section for selected day info */
+#calendar .selected-day-info {
     margin-top: auto;
-    padding-top: 1rem;
+    padding-top: 0.5rem;
     border-top: solid 2px var(--theme-alt-1);
+    min-height: 80px; /* Give it a minimum height */
 }
 
-#calendar .today-date {
+#calendar .selected-day-date {
     font-size: 1rem;
     font-weight: 300;
     opacity: 0.8;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
 }
 
-#calendar .events {
-    font-size: 0.8rem;
+#calendar .events-list {
+    font-size: 0.9rem;
     opacity: 0.9;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* --- NEW --- Animation for the event list */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#calendar .events-list.fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
 #calendar .event {
-    padding: 0.2rem 0;
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.6rem;
 }
 
-#calendar .event .material-symbols-outlined {
-    font-size: 0.9rem;
+#calendar .event .event-time {
+    font-size: 0.8rem;
+    font-weight: 600;
+    width: 50px; /* Align times */
+    flex-shrink: 0;
+}
+
+#calendar .event .event-title {
+    flex-grow: 1;
+}
+
+/* --- NEW --- Style for when no events are scheduled */
+#calendar .no-events {
+    opacity: 0.6;
+    font-style: italic;
 }
 
 #rss {

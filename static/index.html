@@ -512,7 +512,7 @@
                 </div>
                 <div class="widget xl" id="calendar">
                     <div id="calendar-error" class="calendar-error"></div>
-
+                
                     <div class="header">
                         <button class="nav-button" onclick="changeWeek(-1)">
                             <span class="material-symbols-outlined">chevron_left</span>
@@ -522,7 +522,7 @@
                             <span class="material-symbols-outlined">chevron_right</span>
                         </button>
                     </div>
-
+                
                     <div class="weekdays">
                         <div class="weekday">Nd</div>
                         <div class="weekday">Pn</div>
@@ -532,15 +532,17 @@
                         <div class="weekday">Pt</div>
                         <div class="weekday">Sb</div>
                     </div>
-
+                
                     <div class="week-container">
+                        <!-- Weeks will be dynamically inserted here -->
                         <div class="week" id="currentWeek"></div>
                     </div>
-
-                    <div class="today-info">
-                        <div class="today-date" id="todayDate"></div>
-                        <div class="events" id="todayEvents">
-                            <!-- Today's events will be populated here -->
+                
+                    <!-- This section is now for the SELECTED day, not just today -->
+                    <div class="selected-day-info">
+                        <div class="selected-day-date" id="selectedDate"></div>
+                        <div class="events-list" id="selectedEvents">
+                            <!-- Selected day's events will be populated here -->
                         </div>
                     </div>
                 </div>

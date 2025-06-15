@@ -245,6 +245,7 @@ span.material-symbols-outlined {
 .container .col:first-child {
     flex: 1.5;
     overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .container .col .widget {

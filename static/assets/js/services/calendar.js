@@ -19,7 +19,6 @@ class Calendar {
                     result.error
                 );
             } else {
-                console.log(await window.backend.google.getUpcomingEvents());
                 // Notify calendar widget that events are available
                 window.dispatchEvent(
                     new CustomEvent("calendar-events-updated")
@@ -67,7 +66,21 @@ class Calendar {
 
 class CalendarWidget {
     constructor() {
-        this.currentWeekStart = this.getWeekStart(new Date());
+        // UI Elements
+        this.monthYearEl = document.getElementById("monthYear");
+        this.currentWeekEl = document.getElementById("currentWeek");
+        this.selectedDateEl = document.getElementById("selectedDate");
+        this.selectedEventsEl = document.getElementById("selectedEvents");
+        this.weekContainerEl = document.querySelector(".week-container");
+
+        // State
+        this.currentWeekStart = this.getStartOfWeek(new Date());
+        this.selectedDate = new Date();
+        this.events = new Map(); // Stores events by date string 'YYYY-MM-DD'
+        this.isAnimating = false;
+        this.isLoading = false;
+
+        // Constants for Polish localization
         this.monthNames = [
             "Styczeń",
             "Luty",
@@ -91,61 +104,27 @@ class CalendarWidget {
             "Piątek",
             "Sobota",
         ];
-        this.events = new Map(); // Store events by date
-        this.isAnimating = false;
-        this.isLoading = false;
 
-        this.setupEventListeners();
+        // Initialization
         this.loadEvents();
-        this.updateCalendar();
     }
 
-    setupEventListeners() {
-        // Listen for calendar events updates
-        window.addEventListener("calendar-events-updated", () => {
-            this.loadEvents();
-        });
-
-        // Listen for calendar backend events
-        window.addEventListener("calendar-event", (e) => {
-            const { event, data } = e.detail;
-
-            switch (event) {
-                case "ready":
-                    this.loadEvents();
-                    break;
-                case "error":
-                    console.error("Calendar backend error:", data);
-                    this.handleError("Failed to load calendar events");
-                    break;
-            }
-        });
-    }
+    // --- DATA & BACKEND METHODS ---
 
     async loadEvents() {
         if (this.isLoading) return;
+        this.isLoading = true;
+        // You can add a visual loading indicator here if you want
 
         try {
-            this.isLoading = true;
-            this.showLoadingState();
-
+            // This now uses the MOCK backend. Replace with your actual backend call.
             const upcomingEvents =
                 await window.backend.google.getUpcomingEvents();
-
-            if (upcomingEvents && upcomingEvents.length > 0) {
-                this.processEvents(upcomingEvents);
-                this.updateCalendar();
-                this.hideLoadingState();
-            } else {
-                // No events or not authenticated
-                this.events.clear();
-                this.updateCalendar();
-                this.hideLoadingState();
-            }
+            this.processEvents(upcomingEvents);
+            this.updateCalendar(); // This will render everything
         } catch (error) {
             console.error("Failed to load calendar events:", error);
-            this.handleError("Failed to load calendar events");
-            this.hideLoadingState();
+            this.handleError("Nie udało się załadować wydarzeń");
         } finally {
             this.isLoading = false;
         }
@@ -153,288 +132,252 @@ class CalendarWidget {
 
     processEvents(events) {
         this.events.clear();
+        if (!events) return;
 
         events.forEach((event) => {
-            try {
-                // Handle different date formats from Google Calendar
-                let eventDate;
-
-                if (event.start && event.start.date) {
-                    // All-day event
-                    eventDate = new Date(event.start.date + "T00:00:00");
-                } else if (event.start && event.start.dateTime) {
-                    // Timed event
-                    eventDate = new Date(event.start.dateTime);
-                } else {
-                    console.warn("Event has no valid date:", event);
-                    return;
-                }
-
-                const dateStr = eventDate.toISOString().split("T")[0];
-
-                if (!this.events.has(dateStr)) {
-                    this.events.set(dateStr, []);
-                }
-
-                this.events.get(dateStr).push({
-                    id: event.id,
-                    title: event.summary || "Untitled Event",
-                    start: event.start,
-                    end: event.end,
-                    allDay: !!event.start.date,
-                    location: event.location,
-                    description: event.description,
-                });
-            } catch (error) {
-                console.error("Error processing event:", event, error);
+            let eventDate;
+            if (event.start?.date) {
+                // All-day event
+                eventDate = new Date(event.start.date + "T00:00:00");
+            } else if (event.start?.dateTime) {
+                // Timed event
+                eventDate = new Date(event.start.dateTime);
+            } else {
+                return; // Skip invalid events
             }
+
+            const dateStr = eventDate.toISOString().split("T")[0]; // 'YYYY-MM-DD'
+            if (!this.events.has(dateStr)) {
+                this.events.set(dateStr, []);
+            }
+            this.events.get(dateStr).push({
+                title: event.summary || "Brak tytułu",
+                start: event.start,
+                end: event.end,
+                allDay: !!event.start.date,
+            });
         });
     }
 
-    showLoadingState() {
-        const calendarElement = document.querySelector(".calendar-container");
-        if (calendarElement) {
-            calendarElement.classList.add("loading");
-        }
-    }
+    // --- UI RENDERING METHODS ---
 
-    hideLoadingState() {
-        const calendarElement = document.querySelector(".calendar-container");
-        if (calendarElement) {
-            calendarElement.classList.remove("loading");
-        }
-    }
-
-    handleError(message) {
-        // You can implement error display UI here
-        console.error(message);
-
-        // Optionally show error message to user
-        const errorElement = document.getElementById("calendar-error");
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.style.display = "block";
-
-            // Hide error after 5 seconds
-            setTimeout(() => {
-                errorElement.style.display = "none";
-            }, 5000);
-        }
-    }
-
-    getWeekStart(date) {
-        const d = new Date(date);
-        const day = d.getDay();
-        const diff = d.getDate() - day;
-        return new Date(d.setDate(diff));
-    }
-
-    createWeek(weekStart) {
-        const week = [];
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(weekStart);
-            date.setDate(weekStart.getDate() + i);
-            week.push(date);
-        }
-        return week;
+    updateCalendar() {
+        this.monthYearEl.textContent = this.currentWeekStart
+            .toLocaleDateString("pl-PL", { month: "long", year: "numeric" })
+            .replace(/^\w/, (c) => c.toUpperCase());
+        this.renderWeek(this.currentWeekEl, this.currentWeekStart);
+        this.renderSelectedDayEvents(); // Render the bottom panel for the selected day
     }
 
     renderWeek(weekElement, weekStart) {
-        const week = this.createWeek(weekStart);
         weekElement.innerHTML = "";
-
-        week.forEach((date) => {
-            const dayElement = document.createElement("div");
-            dayElement.className = "day";
-            dayElement.textContent = date.getDate();
-
-            const today = new Date();
-            if (date.toDateString() === today.toDateString()) {
-                dayElement.classList.add("today");
-            }
-
-            const dateStr = date.toISOString().split("T")[0];
-            const dayEvents = this.events.get(dateStr);
-
-            if (dayEvents && dayEvents.length > 0) {
-                dayElement.classList.add("has-event");
-
-                // Add event count indicator if multiple events
-                if (dayEvents.length > 1) {
-                    const eventCount = document.createElement("span");
-                    eventCount.className = "event-count";
-                    eventCount.textContent = dayEvents.length;
-                    dayElement.appendChild(eventCount);
-                }
-
-                // Add tooltip with event titles
-                const eventTitles = dayEvents.map((e) => e.title).join("\n");
-                dayElement.title = eventTitles;
-            }
-
-            dayElement.onclick = (e) => {
-                e.stopPropagation();
-                this.showDayEvents(date, dayEvents);
-            };
-
-            weekElement.appendChild(dayElement);
-        });
-    }
-
-    showDayEvents(date, events) {
-        const dateStr = date.toLocaleDateString("pl-PL", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
-
-        console.log(`Events for ${dateStr}:`, events);
-
-        // You can implement a modal or sidebar to show event details
-        if (events && events.length > 0) {
-            // For now, just log the events
-            events.forEach((event) => {
-                console.log(
-                    `- ${event.title}`,
-                    event.allDay
-                        ? "(All day)"
-                        : `${new Date(event.start.dateTime).toLocaleTimeString(
-                              "pl-PL",
-                              {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                              }
-                          )}`
-                );
-            });
-        } else {
-            console.log("No events for this day");
-        }
-
-        // Dispatch custom event for other components to handle
-        window.dispatchEvent(
-            new CustomEvent("day-selected", {
-                detail: { date, events: events || [] },
-            })
-        );
-    }
-
-    updateCalendar() {
-        // Update month/year display
-        const monthYear = this.currentWeekStart.toLocaleDateString("pl-PL", {
-            month: "long",
-            year: "numeric",
-        });
-        document.getElementById("monthYear").textContent =
-            monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
-
-        // Update today's date
         const today = new Date();
-        const todayStr = `${
-            this.dayNames[today.getDay()]
-        }, ${today.getDate()} ${this.monthNames[today.getMonth()]}`;
-        document.getElementById("todayDate").textContent = todayStr;
+        const todayStr = today.toISOString().split("T")[0];
 
-        // Render current week
-        this.renderWeek(
-            document.getElementById("currentWeek"),
-            this.currentWeekStart
-        );
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(weekStart);
+            date.setDate(weekStart.getDate() + i);
+            const dateStr = date.toISOString().split("T")[0];
+
+            const dayEl = document.createElement("div");
+            dayEl.className = "day";
+            dayEl.textContent = date.getDate();
+
+            if (date.getMonth() !== this.currentWeekStart.getMonth()) {
+                dayEl.classList.add("other-month");
+            }
+            if (dateStr === todayStr) {
+                dayEl.classList.add("today");
+            }
+            if (this.events.has(dateStr)) {
+                dayEl.classList.add("has-event");
+            }
+            if (date.toDateString() === this.selectedDate.toDateString()) {
+                dayEl.classList.add("selected");
+            }
+
+            dayEl.onclick = () => this.selectDay(dayEl, date);
+            weekElement.appendChild(dayEl);
+        }
+    }
+
+    renderSelectedDayEvents() {
+        // Fade out old events by removing content immediately
+        this.selectedEventsEl.innerHTML = "";
+        this.selectedEventsEl.classList.remove("fade-in");
+
+        const date = this.selectedDate;
+        const formattedDate = `${
+            this.dayNames[date.getDay()]
+        }, ${date.getDate()} ${this.monthNames[date.getMonth()]}`;
+        this.selectedDateEl.textContent = formattedDate;
+
+        const dateStr = date.toISOString().split("T")[0];
+        const dayEvents = this.events.get(dateStr) || [];
+
+        // Use a timeout to allow the DOM to clear before adding new content and the animation class
+        setTimeout(() => {
+            if (dayEvents.length > 0) {
+                // Sort events by time for a better display
+                dayEvents.sort((a, b) => {
+                    if (a.allDay) return -1;
+                    if (b.allDay) return 1;
+                    return (
+                        new Date(a.start.dateTime) - new Date(b.start.dateTime)
+                    );
+                });
+
+                dayEvents.forEach((event) => {
+                    const eventEl = document.createElement("div");
+                    eventEl.className = "event";
+
+                    const timeStr = event.allDay
+                        ? "Cały dzień"
+                        : new Date(event.start.dateTime).toLocaleTimeString(
+                              "pl-PL",
+                              { hour: "2-digit", minute: "2-digit" }
+                          );
+
+                    eventEl.innerHTML = `
+                        <span class="event-time">${timeStr}</span>
+                        <span class="event-title">${event.title}</span>
+                    `;
+                    this.selectedEventsEl.appendChild(eventEl);
+                });
+            } else {
+                this.selectedEventsEl.innerHTML = `<div class="no-events">Brak wydarzeń na ten dzień.</div>`;
+            }
+            // Add class to trigger fade-in animation
+            this.selectedEventsEl.classList.add("fade-in");
+        }, 50); // A small delay is enough
+    }
+
+    // --- USER INTERACTION & ANIMATION ---
+
+    selectDay(dayEl, date) {
+        // Update state
+        this.selectedDate = date;
+
+        // Update UI
+        const currentlySelected =
+            this.currentWeekEl.querySelector(".day.selected");
+        if (currentlySelected) {
+            currentlySelected.classList.remove("selected");
+        }
+        dayEl.classList.add("selected");
+
+        // Render the events for the newly selected day
+        this.renderSelectedDayEvents();
     }
 
     changeWeek(direction) {
         if (this.isAnimating) return;
         this.isAnimating = true;
 
-        const currentWeek = document.getElementById("currentWeek");
-
-        // Create new week element for animation
-        const newWeek = document.createElement("div");
-        newWeek.className = "week";
-        newWeek.style.transform =
-            direction > 0 ? "translateX(100%)" : "translateX(-100%)";
-
-        // Calculate new week start
         const newWeekStart = new Date(this.currentWeekStart);
         newWeekStart.setDate(newWeekStart.getDate() + direction * 7);
 
-        // Render new week
-        this.renderWeek(newWeek, newWeekStart);
+        const newWeekEl = document.createElement("div");
+        newWeekEl.className = "week";
+        this.renderWeek(newWeekEl, newWeekStart);
 
-        // Add to container
-        currentWeek.parentNode.appendChild(newWeek);
+        // Position new week for entry animation
+        newWeekEl.style.transform = `translateX(${direction * 100}%)`;
+        this.weekContainerEl.appendChild(newWeekEl);
 
-        // Animate
+        // Animate!
         requestAnimationFrame(() => {
-            currentWeek.style.transform =
-                direction > 0 ? "translateX(-100%)" : "translateX(100%)";
-            newWeek.style.transform = "translateX(0)";
+            this.currentWeekEl.style.transform = `translateX(${
+                -direction * 100
+            }%)`;
+            newWeekEl.style.transform = "translateX(0)";
         });
 
+        // Clean up after animation
         setTimeout(() => {
-            // Update current week start
             this.currentWeekStart = newWeekStart;
+            this.currentWeekEl.remove();
+            newWeekEl.id = "currentWeek";
+            this.currentWeekEl = newWeekEl; // Update reference
 
-            // Replace current week
-            currentWeek.remove();
-            newWeek.id = "currentWeek";
-
-            // Update month display
-            const monthYear = this.currentWeekStart.toLocaleDateString(
-                "pl-PL",
-                {
-                    month: "long",
-                    year: "numeric",
-                }
-            );
-            document.getElementById("monthYear").textContent =
-                monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
+            // Update month/year header after switching
+            this.monthYearEl.textContent = this.currentWeekStart
+                .toLocaleDateString("pl-PL", { month: "long", year: "numeric" })
+                .replace(/^\w/, (c) => c.toUpperCase());
 
             this.isAnimating = false;
-
-            // Load events for new week if needed
-            this.checkAndLoadEventsForWeek(newWeekStart);
-        }, 300);
+        }, 400); // Must match CSS transition duration
     }
 
-    checkAndLoadEventsForWeek(weekStart) {
-        // Check if we need to load more events for the new week
-        const week = this.createWeek(weekStart);
-        const hasEventsForWeek = week.some((date) => {
-            const dateStr = date.toISOString().split("T")[0];
-            return this.events.has(dateStr);
-        });
+    // --- HELPERS & UTILITIES ---
 
-        // If no events for this week and we're not already loading, refresh events
-        if (!hasEventsForWeek && !this.isLoading) {
-            this.loadEvents();
+    getStartOfWeek(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 0); // Adjust for Monday as start of week
+        return new Date(d.setDate(diff));
+    }
+
+    handleError(message) {
+        const errorElement = document.getElementById("calendar-error");
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = "block";
+            setTimeout(() => {
+                errorElement.style.display = "none";
+            }, 5000);
         }
-    }
-
-    // Method to refresh events (can be called externally)
-    refreshEvents() {
-        this.loadEvents();
-    }
-
-    // Get events for a specific date
-    getEventsForDate(date) {
-        const dateStr = date.toISOString().split("T")[0];
-        return this.events.get(dateStr) || [];
     }
 }
 
-// Initialize calendar
+// --- INITIALIZATION ---
+
+// Global instance of the widget
 let calendarWidget;
+
+// Mock Backend - REMOVE THIS SECTION WHEN USING YOUR REAL BACKEND
+// IGNORE_WHEN_COPYING_START
+window.backend = {
+    google: {
+        getUpcomingEvents: async () => {
+            console.log("Using Mock Backend for Events");
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(today.getDate() + 1);
+            const nextWeek = new Date();
+            nextWeek.setDate(today.getDate() + 7);
+
+            return [
+                {
+                    summary: "Spotkanie projektowe",
+                    start: { dateTime: new Date().setHours(10, 0, 0) },
+                },
+                {
+                    summary: "Lunch z klientem",
+                    start: { dateTime: new Date().setHours(13, 30, 0) },
+                },
+                {
+                    summary: "Wizyta u dentysty",
+                    start: { dateTime: tomorrow.setHours(15, 0, 0) },
+                },
+                {
+                    summary: "Dzień wolny",
+                    start: { date: nextWeek.toISOString().split("T")[0] },
+                },
+            ];
+        },
+    },
+};
+// IGNORE_WHEN_COPYING_END
 
 document.addEventListener("DOMContentLoaded", () => {
     window.calendar = new Calendar();
     calendarWidget = new CalendarWidget();
 });
 
+// Make changeWeek globally accessible for the HTML onclick attribute
 function changeWeek(direction) {
-    calendarWidget.changeWeek(direction);
+    if (calendarWidget) {
+        calendarWidget.changeWeek(direction);
+    }
 }
-
-// Export for external use
-window.calendarWidget = calendarWidget;

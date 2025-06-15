@@ -32,8 +32,6 @@ async function refreshMemoList() {
         const memoIndex = $el.data('memo-index'); // Read the `data-memo-index` from the `.el`
         const memo = memos[memoIndex];
 
-        console.log(memo, memoIndex);
-
         $('#noteTitle').text(memo.title);
         $('#noteContents').html(memo.content.replace(/(?:\r\n|\r|\n)/g, '<br>'));
 

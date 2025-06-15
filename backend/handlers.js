@@ -705,7 +705,6 @@ export function setup(mainWindow) {
 
     ipcMain.handle("calendar-get-upcoming-events", async (event) => {
         const calendars = await handleCalendarCall(() => CalendarService.getCalendarList());
-        console.log(calendars);
 
         const now = new Date().toISOString();
 
@@ -735,12 +734,6 @@ export function setup(mainWindow) {
 
         return await handleCalendarCall(() => CalendarService.getEvents());
     });
-
-    // (async () => {
-    //     console.log(
-    //         await handleCalendarCall(() => CalendarService.getCalendarList())
-    //     );
-    // })();
 
     // STT/TTS integration
     ipcMain.handle("speech-transcribe-stream", async (event) => {
