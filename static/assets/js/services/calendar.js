@@ -120,7 +120,8 @@ class CalendarWidget {
             // This now uses the MOCK backend. Replace with your actual backend call.
             const upcomingEvents =
                 await window.backend.google.getUpcomingEvents();
-            this.processEvents(upcomingEvents);
+            console.log(upcomingEvents.result);
+            this.processEvents(upcomingEvents.result);
             this.updateCalendar(); // This will render everything
         } catch (error) {
             console.error("Failed to load calendar events:", error);
@@ -162,17 +163,63 @@ class CalendarWidget {
     // --- UI RENDERING METHODS ---
 
     updateCalendar() {
-        this.monthYearEl.textContent = this.currentWeekStart
-            .toLocaleDateString("pl-PL", { month: "long", year: "numeric" })
+        // Determine the dominant month for this week
+        const dominantMonth = this.getDominantMonthForWeek(
+            this.currentWeekStart
+        );
+        this.monthYearEl.textContent = dominantMonth
+            .toLocaleDateString("pl-PL", {
+                month: "long",
+                year: "numeric",
+            })
             .replace(/^\w/, (c) => c.toUpperCase());
+
         this.renderWeek(this.currentWeekEl, this.currentWeekStart);
         this.renderSelectedDayEvents(); // Render the bottom panel for the selected day
+    }
+
+    getDominantMonthForWeek(weekStart) {
+        const monthCounts = new Map();
+
+        // Count days for each month in the current week
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(weekStart);
+            date.setDate(weekStart.getDate() + i);
+            const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+
+            monthCounts.set(monthKey, (monthCounts.get(monthKey) || 0) + 1);
+        }
+
+        // Find the month with the most days
+        let dominantMonthKey = null;
+        let maxCount = 0;
+
+        for (const [monthKey, count] of monthCounts) {
+            if (count > maxCount) {
+                maxCount = count;
+                dominantMonthKey = monthKey;
+            }
+        }
+
+        // Return a date object for the dominant month
+        if (dominantMonthKey) {
+            const [year, month] = dominantMonthKey.split("-").map(Number);
+            return new Date(year, month, 1);
+        }
+
+        // Fallback to week start if something goes wrong
+        return weekStart;
     }
 
     renderWeek(weekElement, weekStart) {
         weekElement.innerHTML = "";
         const today = new Date();
         const todayStr = today.toISOString().split("T")[0];
+
+        // Get the dominant month for better styling
+        const dominantMonth = this.getDominantMonthForWeek(weekStart);
+        const dominantMonthNum = dominantMonth.getMonth();
+        const dominantYear = dominantMonth.getFullYear();
 
         for (let i = 0; i < 7; i++) {
             const date = new Date(weekStart);
@@ -183,9 +230,15 @@ class CalendarWidget {
             dayEl.className = "day";
             dayEl.textContent = date.getDate();
 
-            if (date.getMonth() !== this.currentWeekStart.getMonth()) {
+            // Improved month styling logic
+            const isInDominantMonth =
+                date.getMonth() === dominantMonthNum &&
+                date.getFullYear() === dominantYear;
+
+            if (!isInDominantMonth) {
                 dayEl.classList.add("other-month");
             }
+
             if (dateStr === todayStr) {
                 dayEl.classList.add("today");
             }
@@ -300,9 +353,15 @@ class CalendarWidget {
             newWeekEl.id = "currentWeek";
             this.currentWeekEl = newWeekEl; // Update reference
 
-            // Update month/year header after switching
-            this.monthYearEl.textContent = this.currentWeekStart
-                .toLocaleDateString("pl-PL", { month: "long", year: "numeric" })
+            // Update month/year header after switching using the improved logic
+            const dominantMonth = this.getDominantMonthForWeek(
+                this.currentWeekStart
+            );
+            this.monthYearEl.textContent = dominantMonth
+                .toLocaleDateString("pl-PL", {
+                    month: "long",
+                    year: "numeric",
+                })
                 .replace(/^\w/, (c) => c.toUpperCase());
 
             this.isAnimating = false;
