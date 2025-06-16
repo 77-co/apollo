@@ -55,8 +55,6 @@ class Integration {
     }
 }
 
-
-
 function closeAuth() {
     $('#linkLoginAlert').removeClass('active');
 }

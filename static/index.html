@@ -138,8 +138,8 @@
                     <span class="category" data-category-id="wifiSettings"><span
                             class="material-symbols-outlined fill">wifi</span>Wi-Fi</span>
 
-                    <span class="category" data-category-id="spotifySettings"><span
-                            class="material-symbols-outlined fill">music_note</span>Spotify</span>
+                    <!-- <span class="category" data-category-id="spotifySettings"><span
+                            class="material-symbols-outlined fill">music_note</span>Spotify</span> -->
 
                     <span class="category" data-category-id="linkSettings"><span
                             class="material-symbols-outlined fill">link</span>Apollo Link</span>
@@ -274,7 +274,7 @@
                     </div>
                     <div class="category" id="spotifySettings">
                         <div class="spotifyDeviceAlert active">
-                            <p>Aby sterować odtwarzaniem Spotify, musisz uruchomić odtwarzanie na jakimś urządzeniu.</p>
+                            <p>Aby sterować Spotify, musisz uruchomić odtwarzanie na jakimś urządzeniu.</p>
                         </div>
 
                         <p>Jeśli to widzisz to znaczy, że pomyślnie udało ci się połączyć konto Spotify!</p>
@@ -367,7 +367,7 @@
             </div>
 
             <div class="app" id="mobidziennikApp">
-                <span class="appTitle">Mobidziennik</span>
+                <span class="appTitle">mobiDziennik</span>
                 <div class="mobi-content">
                     <div class="mobi-filters">
                         <div class="filter-list">
@@ -489,11 +489,11 @@
 
                 <div class="widget sm" id="spotify">
                     <div class="spotifyLoginAlert active"
-                        onclick="openApp('settings', $(this).parent().get(0));animateContentChange('spotifySettings')">
-                        <p>Kliknij aby aktywować integrację ze Spotify w ustawieniach.</p>
+                        onclick="openApp('settings', $(this).parent().get(0));animateContentChange('linkSettings')">
+                        <p>Stuknij aby połączyć Spotify w ustawieniach.</p>
                     </div>
                     <div class="spotifyDeviceAlert active">
-                        <p>Aby sterować odtwarzaniem Spotify, musisz uruchomić odtwarzanie na jakimś urządzeniu.</p>
+                        <p>Aby sterować Spotify, uruchom odtwarzanie.</p>
                     </div>
 
                     <div class="main-content">
@@ -520,12 +520,12 @@
 
                 <div class="widget sm" id="mobidziennik" onclick="openApp('mobidziennikApp', this)">
                     <div class="mobiLoginAlert active">
-                        <p>Ładowanie wydarzeń z Mobidziennika...</p>
+                        <p>Ładowanie wydarzeń z mobiDziennka...</p>
                     </div>
 
                     <div class="widget-header">
                         <div class="widget-title">
-                            <h3>Mobidziennik</h3>
+                            <h3>mobiDziennik</h3>
                             <span class="next-event-indicator">Następne wydarzenie</span>
                         </div>
                     </div>
@@ -539,6 +539,11 @@
                     </div>
                 </div>
                 <div class="widget xl" id="calendar">
+                    <div class="googleLoginAlert active"
+                        onclick="openApp('settings', $(this).parent().get(0));animateContentChange('linkSettings')">
+                        <p>Stuknij aby połączyć Google w ustawieniach.</p>
+                    </div>
+
                     <div id="calendar-error" class="calendar-error"></div>
                 
                     <div class="header">

@@ -27,7 +27,6 @@ let screensaverActive = true;
 async function resetIdleTimer() {
     const screensaverTime =
         (await window.backend.settings.get("power.timeScreensaver")) * 1000;
-    console.log(screensaverTime);
 
     if (resettingContainer || openAnimationRunning) return;
 

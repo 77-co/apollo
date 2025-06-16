@@ -19,6 +19,7 @@ class Calendar {
                     result.error
                 );
             } else {
+                $(".googleLoginAlert").removeClass("active"); // FIXME: This runs even when the user is not logged in
                 // Notify calendar widget that events are available
                 window.dispatchEvent(
                     new CustomEvent("calendar-events-updated")

@@ -272,7 +272,8 @@
 }
 
 #spotify .spotifyLoginAlert,
-#spotify .spotifyDeviceAlert {
+#spotify .spotifyDeviceAlert,
+#calendar .googleLoginAlert {
     position: absolute;
     backdrop-filter: blur(10px);
     width: 100%;
@@ -290,8 +291,6 @@
 #spotify .spotifyDeviceAlert {
     z-index: 2;
 }
-
-
 
 /* Calendar */
 #calendar {
