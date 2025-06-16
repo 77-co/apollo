@@ -11,6 +11,14 @@ const values = {
     "ui.darkMode": { validator: validators.bool, default: false },
     "ai.realtime": { validator: validators.bool, default: false },
     "ai.name": { validator: validators.string, default: "" },
+    "power.timeScreensaver": {
+        validator: validators.positiveInt,
+        default: 300,
+    },
+    "power.timeLowPower": {
+        validator: validators.positiveInt,
+        default: 900,
+    },
 };
 
 export default {

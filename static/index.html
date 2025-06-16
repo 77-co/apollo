@@ -129,9 +129,6 @@
                     <span class="category" data-category-id="uiSettings"><span
                             class="material-symbols-outlined fill">brush</span>Wygląd</span>
 
-                    <span class="category" data-category-id="screensaverSettings"><span
-                            class="material-symbols-outlined fill">smart_display</span>Wyg. ekranu</span>
-
                     <span class="category" data-category-id="powerSettings"><span
                             class="material-symbols-outlined fill">eco</span>Zasilanie</span>
 
@@ -185,6 +182,37 @@
                                     class="setting" data-setting-key="ui.darkMode">
                                 <span class="toggle-slider"></span>
                             </label>
+                        </div>
+                    </div>
+                    <div class="category" id="powerSettings">
+                        <div class="setting-row">
+                            <div class="setting-text">
+                                <h3 class="setting-title">Wygaszacz ekranu</h3>
+                                <p class="setting-description">Wygaszacz ekranu przyciemnia ekran i wyświetla kojącą animację, datę i godzinę oraz muzykę. Wygaszacz ekranu nie wpływa na zużycie prądu.</p>
+                            </div>
+                            <div class="select-wrapper">
+                                <select class="select setting" onchange="setting(this)" data-setting-key="power.timeScreensaver">
+                                    <option value="60">Po minucie</option>
+                                    <option value="300">Po 5 minutach</option>
+                                    <option value="900">Po 15 minutach</option>
+                                    <option value="1800">Po 30 minutach</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-text">
+                                <h3 class="setting-title">Tryb low-power</h3>
+                                <p class="setting-description">Tryb low-power stanowi zastąpienie wygaszacza ekranu. Ogranicza on większość procesów w tle. Czas liczony jest od startu wygaszacza.</p>
+                            </div>
+                            <div class="select-wrapper">
+                                <select class="select setting" onchange="setting(this)" data-setting-key="power.timeLowPower">
+                                    <option value="0">Nigdy</option>
+                                    <option value="180">Po 3 minutach</option>
+                                    <option value="300">Po 5 minutach</option>
+                                    <option value="900">Po 15 minutach</option>
+                                    <option value="1800">Po 30 minutach</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="category" id="speechSettings">

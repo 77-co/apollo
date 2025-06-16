@@ -13,8 +13,6 @@ import memos from "./memos/index.js";
 import { RSSManager } from './rss/index.js';
 import MobidziennikService from './assistant/plugins/mobidziennik/events.js';
 
-
-
 import { SpotifyClient } from "./spotify/index.js";
 import GoogleCalendarClient from "./google-calendar/index.js";
 
@@ -189,11 +187,29 @@ export function setup(mainWindow) {
     });
 
     // Misc
-    ipcMain.handle("misc-set-dark-theme", (event, darkTheme) =>
-        store.set("misc.darkTheme", darkTheme === 1)
-    );
+    // ipcMain.handle("misc-set-dark-theme", (event, darkTheme) =>
+    //     store.set("misc.darkTheme", darkTheme === 1)
+    // );
 
-    ipcMain.handle("misc-get-dark-theme", () => store.get("misc.darkTheme"));
+    // ipcMain.handle("misc-get-dark-theme", () => store.get("misc.darkTheme"));
+
+    let lowPowerActive = false;
+
+    const setLowPower = (enabled) => {
+        if (lowPowerActive === enabled) return;
+
+        if (enabled) {
+            mainWindow.loadFile("./static/low-power.html");
+        } else {
+            mainWindow.loadFile("./static/index.html");
+        }
+
+        lowPowerActive = enabled;
+    };
+
+    ipcMain.handle("misc-set-low-power-mode", (event, enabled) => {
+        setLowPower(enabled);
+    });
 
     // Assistant (AI + wake word) integration
 
@@ -214,7 +230,14 @@ export function setup(mainWindow) {
             wake.start();
             // Initialize microphone before processing loop
             wake.on("wake", () => {
-                forwardEvent("wake");
+                if (lowPowerActive) {
+                    setLowPower(false);
+                    setTimeout(() => {
+                        forwardEvent("wake");
+                    }, 3000);
+                } else {
+                    forwardEvent("wake");
+                }
             });
 
             return { success: true };

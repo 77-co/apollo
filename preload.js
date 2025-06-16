@@ -173,10 +173,12 @@ const memos = {
 };
 
 const misc = {
-    setDarkTheme: (darkTheme) => 
-        ipcRenderer.invoke('misc-set-dark-theme', darkTheme),
-    getDarkTheme: () => 
-        ipcRenderer.invoke('misc-get-dark-theme'),
+    // setDarkTheme: (darkTheme) => 
+    //     ipcRenderer.invoke('misc-set-dark-theme', darkTheme),
+    // getDarkTheme: () => 
+    //     ipcRenderer.invoke('misc-get-dark-theme'),
+    setLowPowerMode: (enabled) => 
+        ipcRenderer.invoke('misc-set-low-power-mode', enabled),
 };
 
 const system = { 
@@ -230,4 +232,5 @@ contextBridge.exposeInMainWorld('backend', {
     system,
     rss,
     integrations,
+    misc,
 });
