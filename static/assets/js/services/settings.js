@@ -75,4 +75,5 @@ function setting(el) {
         // Is a select menu
         window.backend.settings.set($(el).data("setting-key"), el.value);
     }
+
 }

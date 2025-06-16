@@ -22,7 +22,10 @@ class ApolloUI {
             "Apollo, jak się masz?",
         ];
         this.currentPromptIndex = 0;
-        this.isStreamingResponse = 0;
+        this.isStreamingResponse = false;
+        this.isProcessingSpeech = false; // New flag for speech processing
+        this.currentStreamListener = null; // Track current stream listener
+        this.currentStreamEventName = null; // Track current stream event name
 
         this.setupEventListeners();
         this.startPromptCycle();
@@ -35,7 +38,7 @@ class ApolloUI {
             const isRealtime = await window.backend.settings.get("ai.realtime");
             const { event } = e.detail;
 
-            if (event === 'wake' && !this.isStreamingResponse) {
+            if (event === 'wake' && !this.isStreamingResponse && !this.isProcessingSpeech) {
                 if (isRealtime) {
                     const sessionToken = await window.backend.assistant.createRealtimeSession();
                     this.startRealtime(sessionToken);
@@ -124,6 +127,14 @@ class ApolloUI {
     }
 
     startListening() {
+        // Prevent multiple listening sessions
+        if (this.isProcessingSpeech || this.isStreamingResponse) {
+            console.log('Already processing, ignoring listening request');
+            return;
+        }
+
+        this.isProcessingSpeech = true;
+
         $('.transcript').html('');
         $('.apolloOverlay').addClass('active');
         $('.listeningProcessingScreen .prompt-intro, .apolloOverlay .prompt-intro').text('Słucham...');
@@ -146,7 +157,16 @@ class ApolloUI {
     }
 
     async handleFinishedSpeech(finalTranscript) {
+        // Prevent multiple concurrent speech processing
+        if (this.isStreamingResponse) {
+            console.log('Already streaming response, ignoring speech input');
+            this.isProcessingSpeech = false;
+            return;
+        }
+
         if (finalTranscript.length === 0) { // If no speech was detected
+            this.isProcessingSpeech = false;
+            
             if (this.conversationId) {
                 // If there is an active conversation, switch back to chat screen.
                 this.switchScreen('chat');
@@ -198,21 +218,41 @@ class ApolloUI {
         this.listeningAnimation.pause();
         this.processingAnimation.restart();
 
-        await this.handleQuery(finalTranscript);
+        try {
+            await this.handleQuery(finalTranscript);
+        } finally {
+            this.isProcessingSpeech = false;
+        }
     }
 
     async handleQuery(query) {
-        // Generate conversation ID if it's the first query
-        if (!this.conversationId) {
-            this.conversationId = 'conv-' + Math.random().toString(36).substr(2, 9);
+        // Prevent multiple concurrent calls
+        if (this.isStreamingResponse) {
+            console.log('Already processing a query, ignoring new request');
+            return;
         }
 
-        // Ensure messages are added before switching screens
-        this.addMessage('user', query);
+        // Set streaming flag immediately to prevent race conditions
+        this.isStreamingResponse = true;
 
         try {
+            // Generate conversation ID if it's the first query
+            if (!this.conversationId) {
+                this.conversationId = 'conv-' + Math.random().toString(36).substr(2, 9);
+            }
+
+            // Ensure messages are added before switching screens
+            this.addMessage('user', query);
+
             const streamId = 'apollo-response-' + Date.now();
             let currentResponse = '';
+
+            // Clean up any existing stream listeners first
+            if (this.currentStreamListener && this.currentStreamEventName) {
+                window.removeEventListener(this.currentStreamEventName, this.currentStreamListener);
+                this.currentStreamListener = null;
+                this.currentStreamEventName = null;
+            }
 
             // Add assistant message immediately 
             this.addMessage('assistant', '');
@@ -234,15 +274,22 @@ class ApolloUI {
                     this.updateLastAssistantMessage(currentResponse);
                 }
             };
-            window.addEventListener(streamId + '-assistant-chunk', chunkListener);
+
+            // Store references for cleanup
+            this.currentStreamListener = chunkListener;
+            this.currentStreamEventName = streamId + '-assistant-chunk';
+            
+            window.addEventListener(this.currentStreamEventName, chunkListener);
 
             // Stream the message
-            this.isStreamingResponse = true;
             await window.backend.assistant.streamMessage(query, streamId, this.conversationId);
-            this.isStreamingResponse = false;
 
-            // Remove chunk listener
-            window.removeEventListener(streamId + '-assistant-chunk', chunkListener);
+            // Clean up stream listener
+            if (this.currentStreamListener && this.currentStreamEventName) {
+                window.removeEventListener(this.currentStreamEventName, this.currentStreamListener);
+                this.currentStreamListener = null;
+                this.currentStreamEventName = null;
+            }
 
             // Hide typing indicator
             document.getElementById('typingIndicator').classList.add('hidden');
@@ -253,15 +300,38 @@ class ApolloUI {
             // Synthesise the full response
             if (await window.backend.settings.get('speech.enabled'))
                 window.backend.speech.synthesise(currentResponse);
+
         } catch (error) {
             console.error('Error getting response:', error);
+            
+            // Clean up on error
+            if (this.currentStreamListener && this.currentStreamEventName) {
+                window.removeEventListener(this.currentStreamEventName, this.currentStreamListener);
+                this.currentStreamListener = null;
+                this.currentStreamEventName = null;
+            }
+            
             document.getElementById('typingIndicator').classList.add('hidden');
             this.updateLastAssistantMessage('Przepraszam, wystąpił błąd. Spróbuj ponownie.');
+        } finally {
+            // Ensure streaming flag is reset even on error
+            this.isStreamingResponse = false;
         }
     }
 
     // New method to reset conversation
     resetConversation() {
+        // Clean up any active streams
+        if (this.currentStreamListener && this.currentStreamEventName) {
+            window.removeEventListener(this.currentStreamEventName, this.currentStreamListener);
+            this.currentStreamListener = null;
+            this.currentStreamEventName = null;
+        }
+
+        // Reset flags
+        this.isStreamingResponse = false;
+        this.isProcessingSpeech = false;
+
         // Clear messages
         const messagesContainer = document.getElementById('messagesContainer');
         messagesContainer.innerHTML = '';
