@@ -201,7 +201,8 @@
 
 .linkLoginAlert,
 .spotifyLoginAlert,
-.spotifyDeviceAlert {
+.spotifyDeviceAlert,
+.googleLoginAlert {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
@@ -226,7 +227,8 @@
 
 .linkLoginAlert.active,
 .spotifyLoginAlert.active,
-.spotifyDeviceAlert.active {
+.spotifyDeviceAlert.active,
+.googleLoginAlert.active {
     opacity: 1;
     pointer-events: initial;
 }

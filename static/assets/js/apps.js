@@ -41,7 +41,7 @@ function openApp(appId, widget) {
                 expandDiv.remove();
                 openAnimationRunning = false;
             }, 300);
-        }, 300);
+        }, 250);
     }, 20);
 }
 
@@ -56,7 +56,7 @@ function setActiveApp(appId) {
     document.getElementById(appId).dispatchEvent(event);
 }
 
-// This closes the current app
+// This closes the current app with iPhone-like animation
 function closeApp() {
     if (openAnimationRunning) return;
 
@@ -65,10 +65,10 @@ function closeApp() {
     $('#uiContainer').removeClass('shaded');
     anime({
         targets: '.apps',
-        scale: [1, 0.6],
+        scale: [1, 0.85],
         opacity: [1, 0],
-        easing: 'easeOutQuad',
-        duration: 350,
+        easing: 'cubicBezier(0.25, 0.46, 0.45, 0.94)', // iOS-like easing curve
+        duration: 200, // Much faster - iPhone apps close quickly
         complete: () => {
             $('.apps .app').removeClass('active');
             $('.apps').attr('style', '');

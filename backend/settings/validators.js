@@ -1,10 +1,6 @@
 export default {
-    bool: (val) => {
-        return typeof val === "boolean";
-    },
-    string: (val) => {
-        return typeof val === "string";
-    },
+    bool: (val) => typeof val === "boolean",
+    string: (val) => typeof val === "string",
     voice: (val) => {
         const voices = [
             "alloy",
@@ -20,5 +16,6 @@ export default {
             "verse",
         ];
         return voices.includes(val);
-    }
+    },
+    positiveInt: (val) => typeof val === "number" && val > 0
 };
