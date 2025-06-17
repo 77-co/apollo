@@ -1,0 +1,17 @@
+{
+    "name": "spotifyVolume",
+    "description": "Control Spotify volume",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "volume": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100,
+                "default": 50,
+                "description": "Volume level to set for Spotify (0-100)"
+            }
+        },
+        "required": ["volume"]
+    }
+}
