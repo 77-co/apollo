@@ -19,7 +19,6 @@ export class RSSManager {
             ],
             world: [
                 "https://www.polsatnews.pl/rss/swiat.xml",
-                "https://rss.gazeta.pl/pub/rss/gazetawyborcza_swiat.xml",
                 "https://www.tvn24.pl/najwazniejsze.xml"
             ],
             business: [

@@ -187,7 +187,7 @@ class RSSWidget {
         anime({
             targets: [this.headlineElement, this.timestampElement],
             opacity: [1, 0],
-            translateY: [-10, 0],
+            translateY: [0, 10],
             duration: 200,
             easing: 'easeInSine',
             complete: () => {
