@@ -187,23 +187,25 @@ class RSSWidget {
         anime({
             targets: [this.headlineElement, this.timestampElement],
             opacity: [1, 0],
-            translateY: [0, 10],
+            translateX: [0, -15],
             duration: 200,
-            easing: 'easeInSine',
+            easing: "easeInCubic",
             complete: () => {
                 this.headlineElement.textContent = currentNews.title;
-                this.timestampElement.textContent = this.formatTimestamp(currentNews.timestamp);
+                this.timestampElement.textContent = this.formatTimestamp(
+                    currentNews.timestamp
+                );
                 this.sourceElement.textContent = currentNews.source;
                 this.currentIndexElement.textContent = this.currentIndex + 1;
-                
+
                 anime({
                     targets: [this.headlineElement, this.timestampElement],
                     opacity: [0, 1],
-                    translateY: [10, 0],
+                    translateX: [15, 0],
                     duration: 200,
-                    easing: 'easeOutSine'
+                    easing: "easeOutCubic",
                 });
-            }
+            },
         });
     }
 
