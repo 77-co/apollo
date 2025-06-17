@@ -17,5 +17,18 @@ export default {
         ];
         return voices.includes(val);
     },
-    positiveInt: (val) => typeof val === "number" && val > 0
+    positiveInt: (val) => !isNaN(val) && val > 0,
+    themeColor: (val) => {
+        const colors = [
+            "blue",
+            "purple",
+            "pink",
+            "red",
+            "orange",
+            "yellow",
+            "green",
+        ];
+
+        return colors.includes(val);
+    },
 };

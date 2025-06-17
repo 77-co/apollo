@@ -4,10 +4,13 @@ class Calendar {
             // Handle logging out (unlinking account)
             window.backend.google.destroy();
             window.backend.integrations.deintegrate("google");
+            $(".googleLoginAlert").addClass("active");
         });
         this.initializeGoogle();
         this.setupEventListeners();
         // this.setupAnimations();
+
+        this.authorised = () => {};
     }
 
     async initializeGoogle() {
@@ -19,7 +22,6 @@ class Calendar {
                     result.error
                 );
             } else {
-                $(".googleLoginAlert").removeClass("active"); // FIXME: This runs even when the user is not logged in
                 // Notify calendar widget that events are available
                 window.dispatchEvent(
                     new CustomEvent("calendar-events-updated")
@@ -46,7 +48,9 @@ class Calendar {
                     break;
 
                 case "authenticated":
+                    $(".googleLoginAlert").removeClass("active");
                     this.integration.finaliseLogin();
+                    this.authorised();
                     break;
 
                 case "ready":
@@ -432,7 +436,9 @@ window.backend = {
 
 document.addEventListener("DOMContentLoaded", () => {
     window.calendar = new Calendar();
-    calendarWidget = new CalendarWidget();
+    window.calendar.authorised = () => {
+        calendarWidget = new CalendarWidget();
+    };
 });
 
 // Make changeWeek globally accessible for the HTML onclick attribute

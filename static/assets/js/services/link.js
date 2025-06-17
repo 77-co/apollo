@@ -49,8 +49,11 @@ class Integration {
     }
 
     finaliseLogin() {
-        if (this.integrationName === activeIntegrationLogin)
-            $('#linkLoginAlert').removeClass('active');
+        if (this.integrationName === activeIntegrationLogin) {
+            $("#linkQrBlur").removeClass("active");
+            $("#linkLoginAlert").removeClass("active");
+        }
+            
         this._integrationLoggedInSet(true);
     }
 }

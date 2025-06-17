@@ -183,6 +183,23 @@
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
+                        <div class="setting-row">
+                            <div class="setting-text">
+                                <h3 class="setting-title">Kolor wiodący</h3>
+                                <p class="setting-description">Kolor wiodący stosowany jest przy przyciskach, aktywnych elementach i więcej.</p>
+                            </div>
+                            <div class="select-wrapper">
+                                <select class="select setting" onchange="setting(this);setThemeColor(this.value);" data-setting-key="ui.themeColor">
+                                    <option value="blue">Niebieski</option>
+                                    <option value="purple">Fioletowy</option>
+                                    <option value="pink">Różowy</option>
+                                    <option value="red">Czerwony</option>
+                                    <option value="orange">Pomarańczowy</option>
+                                    <option value="yellow">Żółty</option>
+                                    <option value="green">Zielony</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="category" id="powerSettings">
                         <div class="setting-row">
@@ -711,6 +728,7 @@
     <script src="./assets/js/services/settings.js"></script>
     <script src="./assets/js/services/assistant.js"></script>
     <script src="./assets/js/services/memos.js"></script>
+    <script src="./assets/js/services/theme-colors.js"></script>
 
     <script src="./assets/js/services/spotify.js"></script>
     <script src="./assets/js/services/calendar.js"></script>

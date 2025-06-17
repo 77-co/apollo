@@ -9,6 +9,7 @@ const values = {
     "speech.enabled": { validator: validators.bool, default: true },
     "speech.voice": { validator: validators.voice, default: "ash" },
     "ui.darkMode": { validator: validators.bool, default: false },
+    "ui.themeColor": { validator: validators.themeColor, default: "blue" },
     "ai.realtime": { validator: validators.bool, default: false },
     "ai.name": { validator: validators.string, default: "" },
     "power.timeScreensaver": {

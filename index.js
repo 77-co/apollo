@@ -43,4 +43,6 @@ app.whenReady().then(() => {
     setup(win);
 
     win.loadFile('./static/index.html');
+
+    win.setAspectRatio(5 / 3);
 });
