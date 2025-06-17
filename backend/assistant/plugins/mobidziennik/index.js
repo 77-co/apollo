@@ -17,7 +17,7 @@ if (!USERNAME || !PASSWORD) {
 
 const WEEKDAYS = [
   "poniedziałek",
-  "wtorek",
+  "wtorek", 
   "środa",
   "czwartek",
   "piątek"
@@ -70,14 +70,6 @@ export default {
       let outputData = '';
       let errorData = '';
       
-      const WEEKDAYS = [
-        'poniedziałek', 
-        'wtorek', 
-        'środa', 
-        'czwartek', 
-        'piątek'
-      ];
-      
       python.stdout.on('data', (data) => {
         outputData += data.toString('utf-8');
       });
@@ -100,16 +92,35 @@ export default {
         try {
           function decodePolishChars(text) {
             const replacements = {
-              '─Ö': 'ę', '─│': 'ą', '─Ď': 'ś', '─Ź': 'ż', 
-              '─╗': 'ł', '─Ż': 'ń', '─╝': 'ó', '─Ą': 'Ę', 
-              '─Ä': 'Ą', '┼Ü': 'Ś', '┼╗': 'Ż', '┼Ü': 'Ł', 
-              '┼╝': 'Ń', '─│': 'ó'
+              // Common UTF-8 encoding issues for Polish characters
+              '─Ö': 'ę', '─ę': 'ę', 'Ä™': 'ę',
+              '─ä': 'ą', '─│': 'ą', 'Ä…': 'ą',
+              '─Ť': 'ś', '─Ď': 'ś', 'Ĺ›': 'ś',
+              '┼Ť': 'ś', '┼ť': 'ś',
+              '─╝': 'ż', '─Ź': 'ż', 'ĹĽ': 'ż',
+              '┼╗': 'Ż', '┼ž': 'ż',
+              '─ç': 'ł', '─╗': 'ł', 'Ĺ‚': 'ł',
+              '┼Ł': 'Ł', '┼ł': 'ł',
+              '─Ĺ': 'ń', '─Ż': 'ń', 'Ĺ„': 'ń',
+              '┼ą': 'Ń', '┼ä': 'ń',
+              '├│': 'ó', '─Â': 'ó', 'Ă³': 'ó',
+              '┼Ü': 'Ó', '┼ü': 'ó',
+              '─ć': 'ć', '─ç': 'ć', 'Ä‡': 'ć',
+              '─Ż': 'Ć', '─ć': 'ć',
+              // Uppercase versions
+              '─Ş': 'Ę', '─ą': 'Ą', '┼Ü': 'Ś',
+              '┼╗': 'Ż', '┼Ł': 'Ł', '┼ä': 'Ń',
+              // Additional mappings based on your output
+              '┼é': 'ł', '┼Ť': 'ś', '─ů': 'ą'
             };
-      
-            return text.replace(/─Ö|─│|─Ď|─Ź|─╗|─Ż|─╝|─Ą|─Ä|┼Ü|┼╗|┼Ü|┼╝|─│/g, 
-              match => replacements[match] || match);
+
+            let result = text;
+            for (const [encoded, decoded] of Object.entries(replacements)) {
+              result = result.replace(new RegExp(encoded, 'g'), decoded);
+            }
+            return result;
           }
-      
+
           function deepDecode(obj) {
             if (typeof obj === 'string') {
               return decodePolishChars(obj);
@@ -118,23 +129,76 @@ export default {
               return obj.map(deepDecode);
             }
             if (obj !== null && typeof obj === 'object') {
-              return Object.fromEntries(
-                Object.entries(obj).map(([key, value]) => [key, deepDecode(value)])
-              );
+              const result = {};
+              for (const [key, value] of Object.entries(obj)) {
+                const decodedKey = decodePolishChars(key);
+                result[decodedKey] = deepDecode(value);
+              }
+              return result;
             }
             return obj;
           }
-      
+
           let fullSchedule = JSON.parse(outputData);
-          const decodedSchedule = deepDecode(fullSchedule);
+          const decodedResponse = deepDecode(fullSchedule);
+          
+          // Extract the actual schedule from the nested structure
+          const scheduleData = decodedResponse.schedule || decodedResponse;
           const targetWeekday = WEEKDAYS[weekday];
-          const filteredSchedule = decodedSchedule[targetWeekday] || [];      
+          
+          // Debug output
+          console.log('=== DEBUGGING INFO ===');
+          console.log('Target weekday:', JSON.stringify(targetWeekday));
+          console.log('Full response structure:', Object.keys(decodedResponse));
+          console.log('Schedule data keys:', Object.keys(scheduleData));
+          console.log('Available weekdays in schedule:', Object.keys(scheduleData).map(k => JSON.stringify(k)));
+          
+          // Try to find matching key
+          let filteredSchedule = [];
+          let usedKey = null;
+          
+          // First try exact match
+          if (scheduleData[targetWeekday]) {
+            filteredSchedule = scheduleData[targetWeekday];
+            usedKey = targetWeekday;
+            console.log('Found exact match for:', targetWeekday);
+          } else {
+            // Try to find a key that matches when normalized
+            const normalizeString = (str) => str.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const normalizedTarget = normalizeString(targetWeekday);
+            
+            console.log('Normalized target:', normalizedTarget);
+            
+            for (const [key, value] of Object.entries(scheduleData)) {
+              const normalizedKey = normalizeString(key);
+              console.log(`Comparing "${normalizedKey}" with "${normalizedTarget}"`);
+              
+              if (normalizedKey === normalizedTarget || 
+                  normalizedKey.includes(normalizedTarget) || 
+                  normalizedTarget.includes(normalizedKey)) {
+                filteredSchedule = value;
+                usedKey = key;
+                console.log(`Found match with key: "${key}"`);
+                break;
+              }
+            }
+          }
+          
+          console.log(`Final used key: "${usedKey}"`);
+          console.log(`Schedule length for ${targetWeekday}:`, filteredSchedule ? filteredSchedule.length : 0);
+          console.log('=== END DEBUGGING ===');
+          
           resolve({
             date: targetDate.toISOString().split('T')[0],
-            schedule: filteredSchedule
+            schedule: filteredSchedule,
+            weekday: targetWeekday,
+            usedKey: usedKey,
+            fullSchedule: scheduleData
           });
-      
+
         } catch (error) {
+          console.error('Parse error:', error);
+          console.error('Raw output:', outputData);
           reject(new Error(`Failed to parse schedule output: ${error.message}`));
         }
       });
