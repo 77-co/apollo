@@ -87,6 +87,20 @@ const WeatherService = {
         ipcRenderer.invoke('get-weather-complete', params)
 };
 
+const AirQualityService = {
+    getCurrent: (params) =>
+        ipcRenderer.invoke('get-air-quality', params),
+
+    getForecast: (location, days = 4) =>
+        ipcRenderer.invoke('get-air-quality-forecast', location, days),
+
+    getHistorical: (location, days = 5) =>
+        ipcRenderer.invoke('get-air-quality-historical', location, days),
+
+    getComplete: (params) =>
+        ipcRenderer.invoke('get-air-quality-complete', params)
+};
+
 const SpotifyService = {
     initialize: (config) => {
         ipcRenderer.on('spotify-event', (_, { event, data }) => {
@@ -223,6 +237,7 @@ const integrations = {
 contextBridge.exposeInMainWorld('backend', {
     assistant: AssistantService,
     weather: WeatherService,
+    airquality: AirQualityService,
     speech: SpeechService,
     settings,
     memos,
