@@ -176,14 +176,8 @@ function toggleShift() {
     generateKeyboard();
     bindKeyEvents();
     
-    // Auto-release shift after next key press (except for caps lock)
-    if (isShiftPressed && !isCapsLock) {
-        setTimeout(() => {
-            isShiftPressed = false;
-            generateKeyboard();
-            bindKeyEvents();
-        }, 100);
-    }
+    // REMOVED: The automatic timeout that was causing the issue
+    // No automatic release - shift will only be released when a character key is pressed
 }
 
 function handleDoubleShift() {
@@ -243,6 +237,12 @@ function bindKeyEvents() {
                 
             case 'spaceKey':
                 insertText(' ');
+                // Reset shift after space if it was a single press (not caps lock)
+                if (isShiftPressed && !isCapsLock && currentLayout === 'letters') {
+                    isShiftPressed = false;
+                    generateKeyboard();
+                    bindKeyEvents();
+                }
                 break;
                 
             case 'numbersKey':
@@ -267,7 +267,7 @@ function bindKeyEvents() {
                     
                     insertText(textToInsert);
                     
-                    // Reset shift if it was a single press
+                    // Reset shift ONLY after a character key is pressed and only if it's not caps lock
                     if (isShiftPressed && !isCapsLock && currentLayout === 'letters') {
                         isShiftPressed = false;
                         generateKeyboard();
