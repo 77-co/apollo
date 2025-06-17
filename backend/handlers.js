@@ -307,9 +307,9 @@ export function setup(mainWindow) {
         return await AssistantService.createRealtimeSession();
     });
 
-    // Weather integration
+    // Air Quality / Weather integration
 
-    ipcMain.handle("get-weather", async (event, params) => {
+        ipcMain.handle("get-weather", async (event, params) => {
         try {
             const weatherData = await WeatherPlugin.execute(params);
             return { success: true, data: weatherData };
@@ -369,6 +369,73 @@ export function setup(mainWindow) {
                 include_historical: true,
             });
             return { success: true, data: weatherData };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("get-air-quality", async (event, params) => {
+        try {
+            const airQualityData = await WeatherPlugin.getAirQuality(params);
+            return { success: true, data: airQualityData };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle(
+        "get-air-quality-forecast",
+        async (event, location, days = 4) => {
+            try {
+                const airQualityData = await WeatherPlugin.getAirQuality({
+                    location,
+                    include_forecast: true,
+                    forecast_days: days,
+                });
+                return { success: true, data: airQualityData };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                };
+            }
+        }
+    );
+
+    ipcMain.handle(
+        "get-air-quality-historical",
+        async (event, location, days = 5) => {
+            try {
+                const airQualityData = await WeatherPlugin.getAirQuality({
+                    location,
+                    include_historical: true,
+                    historical_days: days,
+                });
+                return { success: true, data: airQualityData };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                };
+            }
+        }
+    );
+
+    ipcMain.handle("get-air-quality-complete", async (event, params) => {
+
+        try {
+            const airQualityData = await WeatherPlugin.getAirQuality({
+                location: params,
+                include_forecast: true,
+                include_historical: true,
+            });
+            return { success: true, data: airQualityData };
         } catch (error) {
             return {
                 success: false,

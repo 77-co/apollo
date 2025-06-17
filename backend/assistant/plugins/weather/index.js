@@ -79,6 +79,58 @@ async function getHistorical(lat, lon, units, timestamp) {
     return response.data;
 }
 
+async function getCurrentAirPollution(lat, lon) {
+    const response = await axios.get(`${BASE_URL}/air_pollution`, {
+        params: {
+            lat,
+            lon,
+            appid: OPENWEATHER_API_KEY
+        }
+    });
+    return response.data;
+}
+
+async function getAirPollutionForecast(lat, lon) {
+    const response = await axios.get(`${BASE_URL}/air_pollution/forecast`, {
+        params: {
+            lat,
+            lon,
+            appid: OPENWEATHER_API_KEY
+        }
+    });
+    return response.data;
+}
+
+async function getHistoricalAirPollution(lat, lon, startTimestamp, endTimestamp) {
+    const response = await axios.get(`${BASE_URL}/air_pollution/history`, {
+        params: {
+            lat,
+            lon,
+            start: Math.floor(startTimestamp / 1000),
+            end: Math.floor(endTimestamp / 1000),
+            appid: OPENWEATHER_API_KEY
+        }
+    });
+    return response.data;
+}
+
+function formatAirQualityData(airPollutionData) {
+    return airPollutionData.list.map(item => ({
+        timestamp: new Date(item.dt * 1000).toISOString(),
+        air_quality_index: item.main.aqi,
+        pollutants: {
+            co: item.components.co,
+            no: item.components.no,
+            no2: item.components.no2,
+            o3: item.components.o3,
+            so2: item.components.so2,
+            pm2_5: item.components.pm2_5,
+            pm10: item.components.pm10,
+            nh3: item.components.nh3
+        }
+    }));
+}
+
 export default {
     async execute({ 
         location, 
@@ -86,7 +138,12 @@ export default {
         include_forecast = false,
         forecast_days = 5,
         include_historical = false,
-        historical_days = 5
+        historical_days = 5,
+        include_air_quality = false,
+        include_air_quality_forecast = false,
+        air_quality_forecast_days = 4,
+        include_historical_air_quality = false,
+        historical_air_quality_days = 5
     }) {
         try {
             const apiUnits = units === 'celsius' ? 'metric' : 'imperial';
@@ -165,6 +222,30 @@ export default {
                 }
             }
 
+            // Air Quality Features
+            if (include_air_quality) {
+                const currentAirPollution = await getCurrentAirPollution(lat, lon);
+                const formattedAirQuality = formatAirQualityData(currentAirPollution);
+                response.current_air_quality = formattedAirQuality[0];
+            }
+
+            if (include_air_quality_forecast) {
+                const airPollutionForecast = await getAirPollutionForecast(lat, lon);
+                const formattedForecast = formatAirQualityData(airPollutionForecast);
+                // Limit to requested number of days (24 hours per day)
+                const maxItems = air_quality_forecast_days * 24;
+                response.air_quality_forecast = formattedForecast.slice(0, maxItems);
+            }
+
+            if (include_historical_air_quality) {
+                const now = Date.now();
+                const startTimestamp = now - (historical_air_quality_days * 24 * 60 * 60 * 1000);
+                const endTimestamp = now - (24 * 60 * 60 * 1000); // Yesterday
+                
+                const historicalAirPollution = await getHistoricalAirPollution(lat, lon, startTimestamp, endTimestamp);
+                response.historical_air_quality = formatAirQualityData(historicalAirPollution);
+            }
+
             return response;
         } catch (error) {
             if (error.response?.status === 404) {
@@ -172,5 +253,57 @@ export default {
             }
             throw new Error(`Failed to fetch weather data: ${error.message}`);
         }
+    },
+
+    // Standalone air quality function
+    async getAirQuality({
+        location,
+        include_forecast = false,
+        forecast_days = 4,
+        include_historical = false,
+        historical_days = 5
+    }) {
+        try {
+
+            const { lat, lon, name: cityName, country } = await getCoordinates(location);
+            
+            const response = {
+                location: {
+                    name: cityName,
+                    country,
+                    coordinates: { lat, lon }
+                }
+            };
+
+            // Current air quality
+            const currentAirPollution = await getCurrentAirPollution(lat, lon);
+            const formattedCurrent = formatAirQualityData(currentAirPollution);
+            response.current = formattedCurrent[0];
+
+            // Air quality forecast
+            if (include_forecast) {
+                const airPollutionForecast = await getAirPollutionForecast(lat, lon);
+                const formattedForecast = formatAirQualityData(airPollutionForecast);
+                const maxItems = forecast_days * 24; // 24 hours per day
+                response.forecast = formattedForecast.slice(0, maxItems);
+            }
+
+            // Historical air quality
+            if (include_historical) {
+                const now = Date.now();
+                const startTimestamp = now - (historical_days * 24 * 60 * 60 * 1000);
+                const endTimestamp = now - (24 * 60 * 60 * 1000); // Yesterday
+                
+                const historicalAirPollution = await getHistoricalAirPollution(lat, lon, startTimestamp, endTimestamp);
+                response.historical = formatAirQualityData(historicalAirPollution);
+            }
+
+            return response;
+        } catch (error) {
+            if (error.response?.status === 404) {
+                throw new Error(`Location "${location}" not found`);
+            }
+            throw new Error(`Failed to fetch air quality data: ${error.message}`);
+        }
     }
-}
+};
