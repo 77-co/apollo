@@ -5,7 +5,9 @@ import { app, BrowserWindow } from 'electron';
 import 'dotenv/config';
 import Store from 'electron-store';
 import { platform } from 'os';
+import DebugServer from './debugger/server.js';
 
+const debugServer = new DebugServer(3000);
 
 console.log("Detected platform: " + platform());
 
@@ -24,7 +26,20 @@ if (process.env.NODE_ENV === 'production') {
     app.commandLine.appendSwitch('ignore-gpu-blacklist');
 }
 
-app.whenReady().then(() => {
+async function startDebugServer() {
+    if (process.env.NODE_ENV !== 'production') {
+        try {
+            await debugServer.start();
+            console.log('debugging server started on port', debugServer.port);
+        } catch (error) {
+            console.error('Failed to start DebugServer:', error);
+        }
+    } else {
+        console.log('DebugServer disabled in production mode');
+    }
+}
+
+app.whenReady().then(async () => {
     const win = new BrowserWindow({
         width: 800,
         height: 480,
@@ -39,10 +54,44 @@ app.whenReady().then(() => {
             media: true,
         },
     });
-
+ 
     setup(win);
 
     win.loadFile('./static/index.html');
 
     win.setAspectRatio(5 / 3);
+
+    await startDebugServer();
+});
+
+app.on('before-quit', async (event) => {
+    if (debugServer.getStatus().isRunning) {
+        event.preventDefault();
+        try {
+            await debugServer.stop();
+        } catch (error) {
+            console.error('❌ Error stopping DebugServer:', error);
+        } finally {
+            app.quit();
+        }
+    }
+});
+
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+        app.whenReady();
+    }
+});
+
+app.on('window-all-closed', async () => {
+    if (process.platform !== 'darwin') {
+        if (debugServer.getStatus().isRunning) {
+            try {
+                await debugServer.stop();
+            } catch (error) {
+                console.error('Error stopping DebugServer during shutdown:', error);
+            }
+        }
+        app.quit();
+    }
 });

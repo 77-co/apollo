@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, ipcMain } = require('electron');
 
 const AssistantService = {
     initialize: () => {
@@ -220,6 +220,156 @@ const MobidziennikService = {
         ipcRenderer.invoke('mobi-get-date-range', params)
 };
 
+const SystemInformationService = {
+    wifi: {
+        getInterfaces: () =>
+            ipcRenderer.invoke('system-get-wifi-interfaces'),
+        getConnections: () =>
+            ipcRenderer.invoke('system-get-wifi-connections'),
+        getNetworks: () =>
+            ipcRenderer.invoke('system-get-wifi-networks')
+    },
+
+    hardware: {
+        getCPU: () =>
+            ipcRenderer.invoke('system-get-cpu-info'),
+        getMemory: () =>
+            ipcRenderer.invoke('system-get-memory-info'),
+        getBattery: () =>
+            ipcRenderer.invoke('system-get-battery-info'),
+        getGraphics: () =>
+            ipcRenderer.invoke('system-get-graphics-info'),
+        getStorage: () =>
+            ipcRenderer.invoke('system-get-storage-info')
+    },
+
+    network: {
+        getInfo: () =>
+            ipcRenderer.invoke('system-get-network-info'),
+        getCurrentLoad: () =>
+            ipcRenderer.invoke('system-get-current-load')
+    },
+
+    devices: {
+        getUSB: () =>
+            ipcRenderer.invoke('system-get-usb-devices'),
+        getBluetooth: () =>
+            ipcRenderer.invoke('system-get-bluetooth-devices'),
+        getPrinters: () =>
+            ipcRenderer.invoke('system-get-printers'),
+        getAudio: () =>
+            ipcRenderer.invoke('system-get-audio-devices')
+    },
+
+    status: {
+        getSystem: () =>
+            ipcRenderer.invoke('system-get-system-status'),
+        getProcesses: () =>
+            ipcRenderer.invoke('system-get-process-info'),
+        getLoad: () =>
+            ipcRenderer.invoke('system-get-current-load')
+    },
+
+    repository: {
+        getLatestCommit: () =>
+            ipcRenderer.invoke('system-get-latest-commit'),
+        getInfo: () =>
+            ipcRenderer.invoke('system-get-repository-info'),
+        set: (repository) =>
+            ipcRenderer.invoke('system-set-repository', repository),
+        get: () =>
+            ipcRenderer.invoke('system-get-repository')
+    },
+
+    getComprehensive: () =>
+        ipcRenderer.invoke('system-get-comprehensive-info'),
+
+    getQuickStatus: async () => {
+        try {
+            const [system, cpu, memory, load] = await Promise.all([
+                ipcRenderer.invoke('system-get-system-status'),
+                ipcRenderer.invoke('system-get-cpu-info'),
+                ipcRenderer.invoke('system-get-memory-info'),
+                ipcRenderer.invoke('system-get-current-load')
+            ]);
+
+            return {
+                success: true,
+                data: {
+                    timestamp: '2025-06-18 09:45:30',
+                    user: 'pingwiniu',
+                    system: system.data,
+                    cpu: cpu.data,
+                    memory: memory.data,
+                    load: load.data
+                }
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    },
+
+    getNetworkStatus: async () => {
+        try {
+            const [interfaces, connections, wifiConnections] = await Promise.all([
+                ipcRenderer.invoke('system-get-network-info'),
+                ipcRenderer.invoke('system-get-wifi-connections'),
+                ipcRenderer.invoke('system-get-wifi-interfaces')
+            ]);
+
+            return {
+                success: true,
+                data: {
+                    timestamp: '2025-06-18 09:45:30',
+                    user: 'pingwiniu',
+                    network: interfaces.data,
+                    wifi: {
+                        connections: connections.data,
+                        interfaces: wifiConnections.data
+                    }
+                }
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    },
+
+    getDeviceOverview: async () => {
+        try {
+            const [usb, bluetooth, printers, audio] = await Promise.all([
+                ipcRenderer.invoke('system-get-usb-devices'),
+                ipcRenderer.invoke('system-get-bluetooth-devices'),
+                ipcRenderer.invoke('system-get-printers'),
+                ipcRenderer.invoke('system-get-audio-devices')
+            ]);
+
+            return {
+                success: true,
+                data: {
+                    timestamp: '2025-06-18 09:45:30',
+                    user: 'pingwiniu',
+                    devices: {
+                        usb: usb.data,
+                        bluetooth: bluetooth.data,
+                        printers: printers.data,
+                        audio: audio.data
+                    }
+                }
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+};
 
 const rss = {
     getNews: (category) =>
@@ -244,8 +394,322 @@ contextBridge.exposeInMainWorld('backend', {
     mobidziennik: MobidziennikService,
     spotify: SpotifyService,
     google: CalendarService,
+    systeminfo: SystemInformationService,
     system,
     rss,
     integrations,
     misc,
 });
+
+
+// DEBUGGER
+
+
+const debuggerService = {
+    config: {
+        maxErrors: 100,
+        maxWarnings: 50,
+        maxLogs: 30,
+        autoSendInterval: 30000
+    },
+
+    initialize: () => {
+        try {
+            ipcRenderer.on("refresh", (_, { event, data }) => {
+                console.log('🔄 Refresh event received:', event, data);
+                
+                if (event === 'force-reload' || event === 'refresh') {
+                    debuggerService.sendCurrentErrors();
+                    window.location.reload(true);
+                } else {
+                    window.dispatchEvent(
+                        new CustomEvent("refresh", {
+                            detail: { event, data },
+                        })
+                    );
+                }
+            });
+
+            ipcRenderer.on("errorlog", (_, { event, data }) => {
+                console.log('📋 Error log event received:', event, data);
+                
+                if (event === 'get-console-errors' || event === 'collect-logs') {
+                    debuggerService.sendCurrentErrors();
+                } else {
+                    window.dispatchEvent(
+                        new CustomEvent("errorlog", {
+                            detail: { event, data },
+                        })
+                    );
+                }
+            });
+
+            // Auto-send errors periodically
+            setInterval(() => {
+                const state = debuggerService.getErrorState();
+                if (state.hasErrors) {
+                    debuggerService.sendCurrentErrors();
+                }
+            }, debuggerService.config.autoSendInterval);
+
+            console.log('✅ Debugger service initialized successfully');
+
+        } catch (error) {
+            console.error('❌ Error initializing debugger service:', error);
+        }
+    },
+
+    sendCurrentErrors: () => {
+        try {
+            const errorData = {
+                errors: window.capturedErrors || [],
+                warnings: window.capturedWarnings || [],
+                logs: window.capturedLogs || [],
+                url: window.location.href,
+                userAgent: navigator.userAgent,
+                timestamp: new Date().toISOString(),
+                performance: {
+                    loadTime: performance.now(),
+                    memory: performance.memory ? {
+                        used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + ' MB',
+                        total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + ' MB',
+                        limit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024) + ' MB'
+                    } : null,
+                    navigation: performance.getEntriesByType('navigation')[0] || null
+                }
+            };
+
+            console.log('📤 sending error data to main:', {
+                errors: errorData.errors.length,
+                warnings: errorData.warnings.length,
+                logs: errorData.logs.length,
+                timestamp: errorData.timestamp
+            });
+
+            ipcRenderer.send('console-errors-captured', errorData);
+            return errorData;
+
+        } catch (error) {
+            console.error('❌ Error sending error data:', error);
+            return null;
+        }
+    },
+
+    initializeConsoleCapture: () => {
+        try {
+            window.capturedErrors = [];
+            window.capturedWarnings = [];
+            window.capturedLogs = [];
+            
+            // Store original console methods
+            const originalConsole = {
+                error: console.error.bind(console),
+                warn: console.warn.bind(console),
+                log: console.log.bind(console),
+                info: console.info.bind(console)
+            };
+
+            const trimArray = (arr, maxLength) => {
+                if (arr.length > maxLength) {
+                    arr.splice(0, arr.length - maxLength);
+                }
+            };
+
+            // Override console.error to capture errors
+            console.error = function(...args) {
+                try {
+                    const errorEntry = {
+                        type: 'error',
+                        message: args.map(arg => {
+                            if (typeof arg === 'object' && arg !== null) {
+                                if (arg instanceof Error) {
+                                    return `${arg.name}: ${arg.message}`;
+                                }
+                                try {
+                                    return JSON.stringify(arg);
+                                } catch {
+                                    return String(arg);
+                                }
+                            }
+                            return String(arg);
+                        }).join(' '),
+                        stack: new Error().stack,
+                        timestamp: new Date().toISOString(),
+                        source: 'console.error'
+                    };
+                    
+                    window.capturedErrors.push(errorEntry);
+                    trimArray(window.capturedErrors, debuggerService.config.maxErrors);
+                } catch (captureError) {
+                    // Fallback if capture fails
+                    originalConsole.error('Failed to capture error:', captureError);
+                }
+                
+                // Always call original console.error
+                originalConsole.error.apply(console, args);
+            };
+
+            // Override console.warn
+            console.warn = function(...args) {
+                try {
+                    const warningEntry = {
+                        type: 'warning',
+                        message: args.map(arg => {
+                            if (typeof arg === 'object' && arg !== null) {
+                                try {
+                                    return JSON.stringify(arg);
+                                } catch {
+                                    return String(arg);
+                                }
+                            }
+                            return String(arg);
+                        }).join(' '),
+                        timestamp: new Date().toISOString(),
+                        source: 'console.warn'
+                    };
+                    
+                    window.capturedWarnings.push(warningEntry);
+                    trimArray(window.capturedWarnings, debuggerService.config.maxWarnings);
+                } catch (captureError) {
+                    originalConsole.error('Failed to capture warning:', captureError);
+                }
+                
+                originalConsole.warn.apply(console, args);
+            };
+
+            // Override console.log
+            console.log = function(...args) {
+                try {
+                    // Skip logging the debugger's own messages to prevent infinite loops
+                    const message = args.join(' ');
+                    if (message.includes('sending error data to main') || 
+                        message.includes('📤') || 
+                        message.includes('Debugger service')) {
+                        originalConsole.log.apply(console, args);
+                        return;
+                    }
+
+                    const logEntry = {
+                        type: 'log',
+                        message: args.map(arg => {
+                            if (typeof arg === 'object' && arg !== null) {
+                                try {
+                                    return JSON.stringify(arg);
+                                } catch {
+                                    return String(arg);
+                                }
+                            }
+                            return String(arg);
+                        }).join(' '),
+                        timestamp: new Date().toISOString(),
+                        source: 'console.log'
+                    };
+                    
+                    window.capturedLogs.push(logEntry);
+                    trimArray(window.capturedLogs, debuggerService.config.maxLogs);
+                } catch (captureError) {
+                    originalConsole.error('Failed to capture log:', captureError);
+                }
+                
+                originalConsole.log.apply(console, args);
+            };
+
+            // Capture unhandled errors
+            window.addEventListener('error', (event) => {
+                try {
+                    window.capturedErrors.push({
+                        type: 'unhandled-error',
+                        message: event.message,
+                        filename: event.filename,
+                        lineno: event.lineno,
+                        colno: event.colno,
+                        stack: event.error ? event.error.stack : null,
+                        timestamp: new Date().toISOString(),
+                        source: 'window.error'
+                    });
+                    trimArray(window.capturedErrors, debuggerService.config.maxErrors);
+                } catch (captureError) {
+                    originalConsole.error('Failed to capture unhandled error:', captureError);
+                }
+            });
+
+            // Capture unhandled promise rejections
+            window.addEventListener('unhandledrejection', (event) => {
+                try {
+                    window.capturedErrors.push({
+                        type: 'unhandled-promise-rejection',
+                        message: event.reason ? event.reason.toString() : 'Unknown promise rejection',
+                        stack: event.reason && event.reason.stack ? event.reason.stack : null,
+                        timestamp: new Date().toISOString(),
+                        source: 'unhandledrejection'
+                    });
+                    trimArray(window.capturedErrors, debuggerService.config.maxErrors);
+                } catch (captureError) {
+                    originalConsole.error('Failed to capture promise rejection:', captureError);
+                }
+            });
+
+            return true;
+
+        } catch (error) {
+            console.error('❌ Error initializing console capture:', error);
+            return false;
+        }
+    },
+
+    getErrorState: () => {
+        return {
+            hasErrors: window.capturedErrors && window.capturedErrors.length > 0,
+            errorCount: window.capturedErrors ? window.capturedErrors.length : 0,
+            warningCount: window.capturedWarnings ? window.capturedWarnings.length : 0,
+            logCount: window.capturedLogs ? window.capturedLogs.length : 0,
+            lastUpdate: new Date().toISOString()
+        };
+    },
+
+    clearCapturedData: () => {
+        if (window.capturedErrors) window.capturedErrors.length = 0;
+        if (window.capturedWarnings) window.capturedWarnings.length = 0;
+        if (window.capturedLogs) window.capturedLogs.length = 0;
+    },
+
+    getCurrentErrors: () => {
+        return {
+            errors: window.capturedErrors || [],
+            warnings: window.capturedWarnings || [],
+            logs: window.capturedLogs || [],
+            url: window.location.href,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString(),
+            performance: {
+                loadTime: performance.now(),
+                memory: performance.memory ? {
+                    used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + ' MB',
+                    total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + ' MB',
+                    limit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024) + ' MB'
+                } : null
+            }
+        };
+    },
+
+    testErrorCapture: () => {
+        console.error('Test error message');
+        console.warn('Test warning message');
+        console.log('Test log message');
+        
+        setTimeout(() => {
+            const state = debuggerService.getErrorState();
+        }, 100);
+    }
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+    debuggerService.initialize();
+    debuggerService.initializeConsoleCapture();
+    
+    setTimeout(() => {
+        debuggerService.sendCurrentErrors();
+    }, 1000);
+});
+
+window.debuggerService = debuggerService;

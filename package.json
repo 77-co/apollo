@@ -18,11 +18,13 @@
     "electron": "^36.3.2",
     "electron-store": "^10.0.1",
     "eventsource": "^4.0.0",
+    "express": "^5.1.0",
     "googleapis": "^149.0.0",
     "node-record-lpcm16": "^1.0.1",
     "openai": "^4.103.0",
     "play-sound": "^1.1.6",
     "qrcode": "^1.5.4",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "systeminformation": "^5.27.3"
   }
 }

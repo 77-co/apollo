@@ -17,7 +17,31 @@ import { SpotifyClient } from "./spotify/index.js";
 import GoogleCalendarClient from "./google-calendar/index.js";
 
 import { WiFiManager } from "./os/wifi.js";
+import { SystemInfoManager } from "./os/information.js";
 import { deintegrate } from "./link/link.js";
+import Main from "electron/main";
+
+let latestErrorData = {
+    errors: [],
+    warnings: [],
+    logs: [],
+    url: '',
+    userAgent: '',
+    timestamp: null,
+    performance: null
+};
+
+
+process.on('uncaughtException', (error) => {
+    console.error('🚨 UNCAUGHT EXCEPTION - Main Process:', error);
+    console.error('Stack:', error.stack);
+    // Don't exit immediately, log the error
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('🚨 UNHANDLED REJECTION - Main Process:', reason);
+    console.error('Promise:', promise);
+});
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -26,6 +50,7 @@ const store = new Store();
 let AssistantService = null;
 let SpotifyService = null;
 let CalendarService = null;
+let SystemInfoService = null;
 
 export function setup(mainWindow) {
     session.defaultSession.setPermissionRequestHandler(
@@ -38,6 +63,455 @@ export function setup(mainWindow) {
             }
         }
     );
+
+    //DEBUGGER
+
+    ipcMain.on('console-errors-captured', (event, errorData) => {
+
+        // Store the latest error data
+        latestErrorData = {
+            ...errorData,
+            receivedAt: new Date().toISOString()
+        };
+
+        if (global.debugServer && global.debugServer.getStatus().isRunning) {
+            global.debugServer.lastErrorCapture = errorData;
+        }
+
+        if (errorData.errors.length > 0) {
+            console.log('📋 Recent errors:', errorData.errors.slice(-3));
+        }
+    });
+
+    ipcMain.handle('refresh', () => {
+        mainWindow.webContents.send('refresh', {
+            event: 'force-reload',
+            data: {
+                triggeredBy: 'main-process',
+                timestamp: new Date().toISOString()
+            }
+        });
+        return { success: true };
+    });
+
+    // Updated to just return cached error data immediately
+    ipcMain.handle('request-error-logs', () => {
+        return {
+            success: true,
+            data: latestErrorData,
+            timestamp: new Date().toISOString(),
+            cached: true
+        };
+    });
+
+    const refreshPage = () => {
+        mainWindow.webContents.send('refresh', {
+            event: 'force-reload',
+            data: {
+                method: 'direct-call',
+                timestamp: new Date().toISOString()
+            }
+        });
+    };
+
+    const collectLogs = () => {
+        mainWindow.webContents.send('errorlog', {
+            event: 'collect-logs',
+            data: {
+                method: 'direct-call',
+                timestamp: new Date().toISOString()
+            }
+        });
+    };
+
+    const getErrorLogs = () => {
+        return {
+            success: true,
+            data: latestErrorData,
+            timestamp: new Date().toISOString()
+        };
+    };
+
+    global.debugHelpers = {
+        refreshPage,
+        collectLogs,
+        getErrorLogs,
+        getWindow: () => mainWindow,
+        getLatestErrors: () => latestErrorData
+    };
+    
+
+
+    // INFORMATION HANDLERS
+
+    SystemInfoService = new SystemInfoManager();
+
+    ipcMain.handle("system-get-wifi-interfaces", async () => {
+        try {
+            const result = await SystemInfoService.getWiFiInterfaces();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get WiFi interfaces error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-wifi-connections", async () => {
+        try {
+            const result = await SystemInfoService.getWiFiConnections();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get WiFi connections error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-wifi-networks", async () => {
+        try {
+            const result = await SystemInfoService.getWiFiNetworks();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get WiFi networks error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    // Hardware Information
+    ipcMain.handle("system-get-cpu-info", async () => {
+        try {
+            const result = await SystemInfoService.getCPUInfo();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get CPU info error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-memory-info", async () => {
+        try {
+            const result = await SystemInfoService.getMemoryInfo();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get memory info error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-battery-info", async () => {
+        try {
+            const result = await SystemInfoService.getBatteryInfo();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get battery info error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-network-info", async () => {
+        try {
+            const result = await SystemInfoService.getNetworkInfo();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get network info error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-graphics-info", async () => {
+        try {
+            const result = await SystemInfoService.getGraphicsInfo();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get graphics info error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-storage-info", async () => {
+        try {
+            const result = await SystemInfoService.getStorageInfo();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get storage info error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    // Device Information
+    ipcMain.handle("system-get-usb-devices", async () => {
+        try {
+            const result = await SystemInfoService.getUSBDevices();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get USB devices error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-bluetooth-devices", async () => {
+        try {
+            const result = await SystemInfoService.getBluetoothDevices();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get Bluetooth devices error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-audio-devices", async () => {
+        try {
+            const result = await SystemInfoService.getAudioDevices();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get audio devices error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    // System Status and Performance
+    ipcMain.handle("system-get-current-load", async () => {
+        try {
+            const result = await SystemInfoService.getCurrentLoad();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get current load error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-system-status", async () => {
+        try {
+            const result = await SystemInfoService.getSystemStatus();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get system status error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-process-info", async () => {
+        try {
+            const result = await SystemInfoService.getProcessInfo();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get process info error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    // Repository Information
+    ipcMain.handle("system-get-latest-commit", async () => {
+        try {
+            const result = await SystemInfoService.getLatestCommitInfo();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get latest commit error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-repository-info", async () => {
+        try {
+            const result = await SystemInfoService.getRepositoryInfo();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get repository info error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    // Comprehensive System Report
+    ipcMain.handle("system-get-comprehensive-info", async () => {
+        try {
+            const result = await SystemInfoService.getComprehensiveSystemInfo();
+            return {
+                success: true,
+                data: result,
+                
+                
+            };
+        } catch (error) {
+            console.error('Get comprehensive system info error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    // Repository Management
+    ipcMain.handle("system-set-repository", async (event, repository) => {
+        try {
+            SystemInfoService.setRepository(repository);
+            return {
+                success: true,
+                data: { repository: SystemInfoService.getRepository() },
+                
+                
+            };
+        } catch (error) {
+            console.error('Set repository error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
+    ipcMain.handle("system-get-repository", async () => {
+        try {
+            const result = SystemInfoService.getRepository();
+            return {
+                success: true,
+                data: { repository: result },
+                
+                
+            };
+        } catch (error) {
+            console.error('Get repository error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    });
+
 
     // Mobidziennik events
 
