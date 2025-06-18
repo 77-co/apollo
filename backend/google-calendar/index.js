@@ -3,7 +3,7 @@ import EventEmitter from "events";
 import QRCode from "qrcode";
 import axios from "axios";
 import { EventSource } from "eventsource";
-import { getIntegrations, setIntegration } from "../link/link.js";
+import { deintegrate, getIntegrations, setIntegration } from "../link/link.js";
 
 export default class GoogleCalendarClient extends EventEmitter {
     constructor(config = {}) {
@@ -35,13 +35,15 @@ export default class GoogleCalendarClient extends EventEmitter {
     }
 
     async initialize() {
-        if (this.accessToken && this.expiresAt) {
+        if (this.accessToken && this.expiresAt && this.expiresAt > Date.now()) {
             await this._handleAuthenticationSuccess({
                 access_token: this.accessToken,
                 refresh_token: this.refreshToken,
                 expires_at: this.expiresAt,
             });
             return { success: true };
+        } else {
+            deintegrate("google");
         }
 
         try {
@@ -95,9 +97,7 @@ export default class GoogleCalendarClient extends EventEmitter {
     async _handleAuthenticationSuccess(tokens) {
         this.accessToken = tokens.access_token;
         this.refreshToken = tokens.refresh_token;
-        if (!this.expiresAt) {
-            this.expiresAt = Date.now() + tokens.expires_in * 1000;
-        }
+        this.expiresAt = tokens?.expires_at ?? Date.now() + tokens.expires_in * 1000;
 
         setIntegration("google", {
             accessToken: this.accessToken,

@@ -48,6 +48,7 @@ class Calendar {
                     break;
 
                 case "authenticated":
+                    console.log("authenticated google")
                     $(".googleLoginAlert").removeClass("active");
                     this.integration.finaliseLogin();
                     this.authorised();
