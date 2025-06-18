@@ -13,7 +13,7 @@
   "dependencies": {
     "@google-cloud/speech": "^7.1.0",
     "axios": "^1.10.0",
-    "cheerio": "^1.0.0",
+    "cheerio": "^1.1.0",
     "dotenv": "^16.5.0",
     "electron": "^36.3.2",
     "electron-store": "^10.0.1",
