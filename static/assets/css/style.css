@@ -380,10 +380,13 @@ span.material-symbols-outlined {
 }
 
 .example-prompt {
+    height: 3rem;
     font-weight: 400;
     font-size: 1.3rem;
     text-align: center;
     color: var(--theme-fg-1);
+    interpolate-size: allow-keywords;
+    transition: height 0.3s;
 }
 
 /* Listening Screen Styles */

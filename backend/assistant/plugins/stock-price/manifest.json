@@ -1,0 +1,14 @@
+{
+    "name": "quoteSummary",
+    "description": "Gets the quote summary for a specified stock symbol.",
+    "parameters": {
+        "type": "object",
+        "required": ["symbol"],
+        "properties": {
+            "symbol": {
+                "type": "string",
+                "description": "The stock symbol to get the quote summary for, e.g., 'AAPL' for Apple Inc."
+            }
+        }
+    }
+}

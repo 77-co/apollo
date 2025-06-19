@@ -492,9 +492,9 @@
                             bluetooth
                         </span>
                     </button>
-                    <button onclick="$(this).toggleClass('active')">
+                    <button onclick="window.backend.misc.setLowPowerMode(true);">
                         <span class="material-symbols-outlined">
-                            settings
+                            eco
                         </span>
                     </button>
                     <button onclick="openApp('notes', $(this).parent().get(0))">
@@ -680,7 +680,7 @@
             <div class="col" id="apolloScreen">
                 <!-- Idle Screen -->
                 <div class="screen idleScreen active">
-                    <span class="prompt-intro">Powiedz</span>
+                    <span class="prompt-intro">Powiedz...</span>
                     <span id="examplePrompt" class="example-prompt"></span>
                 </div>
 

@@ -19,6 +19,7 @@ class ApolloUI {
             "Apollo, jaka będzie dzisiaj pogoda w Poznaniu?",
             "Apollo, opowiedz mi żart",
             "Apollo, co nowego w technologii?",
+            "Apollo, jak stoi AAPL?",
             "Apollo, jak się masz?",
         ];
         this.currentPromptIndex = 0;

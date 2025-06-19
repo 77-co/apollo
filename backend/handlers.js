@@ -21,6 +21,7 @@ import { SystemInfoManager } from "./os/information.js";
 import { deintegrate } from "./link/link.js";
 import Main from "electron/main";
 import { emulateInvoke } from "./assistant/helpers.js";
+import { setBrightness } from "./display-brightness/index.js";
 
 let latestErrorData = {
     errors: [],
@@ -668,12 +669,14 @@ export function setup(mainWindow) {
 
     let lowPowerActive = false;
 
-    const setLowPower = (enabled) => {
+    const setLowPower = async (enabled) => {
         if (lowPowerActive === enabled) return;
 
         if (enabled) {
+            await setBrightness(20, 1000);
             mainWindow.loadFile("./static/low-power.html");
         } else {
+            await setBrightness(100, 1000);
             mainWindow.loadFile("./static/index.html");
         }
 
