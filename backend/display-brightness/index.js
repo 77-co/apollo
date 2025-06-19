@@ -15,7 +15,7 @@ import { promisify } from "util";
 const execAsync = promisify(exec);
 
 // Global variable for easing frequency (milliseconds between steps)
-const EASING_FREQUENCY = 50;
+const EASING_FREQUENCY = 100;
 
 const DISPLAY_ID = process.env.DISPLAY_ID || "rpi_backlight"; // Default to Raspberry Pi display
 
