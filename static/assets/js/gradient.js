@@ -40,7 +40,7 @@ function createCSSGradientAnimation() {
             background-clip: text;
             -webkit-text-fill-color: transparent;
             background-size: 400% 400%;
-            animation: textShine 6s ease-in-out infinite;
+            animation: textShine 16s ease-in-out infinite;
             font-weight: bold;
             text-shadow: none;
         }

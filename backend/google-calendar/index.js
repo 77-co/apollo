@@ -35,6 +35,17 @@ export default class GoogleCalendarClient extends EventEmitter {
     }
 
     async initialize() {
+        // Clean up any existing connections before initializing
+        if (this.eventSource) {
+            this.eventSource.close();
+            this.eventSource = null;
+        }
+
+        if (this.refreshTimeout) {
+            clearTimeout(this.refreshTimeout);
+            this.refreshTimeout = null;
+        }
+
         if (this.accessToken && this.expiresAt && this.expiresAt > Date.now()) {
             await this._handleAuthenticationSuccess({
                 access_token: this.accessToken,
@@ -52,39 +63,47 @@ export default class GoogleCalendarClient extends EventEmitter {
             );
             const { state, url } = response.data;
 
+            console.log(url);
+
             const qrCode = await QRCode.toDataURL(url);
             this.emit("authInitialized", { authUrl: url, qrCode });
 
-            this.eventSource = new EventSource(
-                `${this.config.authServerUrl}/sse/${state}`
-            );
-
-            this.eventSource.onmessage = async (event) => {
-                const data = JSON.parse(event.data);
-
-                if (data.status === "keep-alive") return;
-
-                if (data.status === "URL visited") {
-                    this.emit("authUrlVisited");
-                }
-
-                if (data.status === "User logged in") {
-                    this.eventSource.close();
-                    await this._handleAuthenticationSuccess({
-                        access_token: data.access_token,
-                        refresh_token: data.refresh_token,
-                        expires_in: data.expires_in,
-                    });
-                    return { success: true };
-                }
-            };
-
-            this.eventSource.onerror = (error) => {
-                this.eventSource.close();
-                console.error(
-                    new Error("Authentication failed: SSE connection error")
+            return new Promise((resolve, reject) => {
+                this.eventSource = new EventSource(
+                    `${this.config.authServerUrl}/sse/${state}`
                 );
-            };
+
+                this.eventSource.onmessage = async (event) => {
+                    const data = JSON.parse(event.data);
+
+                    if (data.status === "keep-alive") return;
+
+                    if (data.status === "URL visited") {
+                        this.emit("authUrlVisited");
+                    }
+
+                    if (data.status === "User logged in") {
+                        this.eventSource.close();
+                        this.eventSource = null;
+                        await this._handleAuthenticationSuccess({
+                            access_token: data.access_token,
+                            refresh_token: data.refresh_token,
+                            expires_in: data.expires_in,
+                        });
+                        resolve({ success: true });
+                    }
+                };
+
+                this.eventSource.onerror = (error) => {
+                    const errorMessage = "Authentication failed: SSE connection error";
+                    console.error(new Error(errorMessage));
+                    this.emit("error", new Error(errorMessage));
+
+                    this.eventSource.close();
+                    this.eventSource = null;
+                    reject(new Error(errorMessage));
+                };
+            });
         } catch (error) {
             this.emit(
                 "error",
@@ -207,11 +226,16 @@ export default class GoogleCalendarClient extends EventEmitter {
     destroy() {
         if (this.refreshTimeout) {
             clearTimeout(this.refreshTimeout);
+            this.refreshTimeout = null;
         }
         if (this.eventSource) {
             this.eventSource.close();
+            this.eventSource = null;
         }
-        this.removeAllListeners();
+
+        // DON'T remove event listeners here
+        // this.removeAllListeners(); <-- Remove this line
+
         this.accessToken = null;
         this.refreshToken = null;
         this.auth = null;

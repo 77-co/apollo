@@ -211,11 +211,16 @@ export class SpotifyClient extends EventEmitter {
     destroy() {
         if (this.refreshTimeout) {
             clearTimeout(this.refreshTimeout);
+            this.refreshTimeout = null;
         }
         if (this.eventSource) {
             this.eventSource.close();
+            this.eventSource = null;
         }
-        this.removeAllListeners();
+        
+        // DON'T remove event listeners here
+        // this.removeAllListeners(); <-- Remove this line
+        
         this.accessToken = null;
         this.refreshToken = null;
         this.deviceId = null;

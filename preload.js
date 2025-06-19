@@ -102,18 +102,39 @@ const AirQualityService = {
 };
 
 const SpotifyService = {
-    initialize: (config) => {
-        ipcRenderer.on('spotify-event', (_, { event, data }) => {
+    _eventListenersAttached: false,
+    
+    _attachEventListeners: function() {
+        if (this._eventListenersAttached) return;
+        
+        // Use a named function so we can reference it for removal
+        this._handleSpotifyEvent = (_, { event, data }) => {
             window.dispatchEvent(new CustomEvent('spotify-event', {
                 detail: { event, data }
             }));
-        });
+        };
+        
+        ipcRenderer.on('spotify-event', this._handleSpotifyEvent);
+        this._eventListenersAttached = true;
+    },
+    
+    initialize: function(config) {
+        // Always ensure event listeners are attached
+        this._attachEventListeners();
         return ipcRenderer.invoke('initialize-spotify', config);
     },
 
-    destroy: () => {
-        ipcRenderer.removeAllListeners('spotify-event');
+    destroy: function() {
+        // Don't remove listeners on destroy, just tell the backend to clean up
         return ipcRenderer.invoke('spotify-destroy');
+    },
+
+    // Add a method to explicitly detach listeners when app is shutting down
+    detachListeners: function() {
+        if (this._eventListenersAttached && this._handleSpotifyEvent) {
+            ipcRenderer.removeListener('spotify-event', this._handleSpotifyEvent);
+            this._eventListenersAttached = false;
+        }
     },
 
     play: (options) => ipcRenderer.invoke('spotify-play', options),
@@ -144,18 +165,39 @@ const SpotifyService = {
 };
 
 const CalendarService = {
-    initialize: (config) => {
-        ipcRenderer.on('calendar-event', (_, { event, data }) => {
+    _eventListenersAttached: false,
+    
+    _attachEventListeners: function() {
+        if (this._eventListenersAttached) return;
+        
+        // Use a named function so we can reference it for removal
+        this._handleCalendarEvent = (_, { event, data }) => {
             window.dispatchEvent(new CustomEvent('calendar-event', {
                 detail: { event, data }
             }));
-        });
+        };
+        
+        ipcRenderer.on('calendar-event', this._handleCalendarEvent);
+        this._eventListenersAttached = true;
+    },
+    
+    initialize: function(config) {
+        // Always ensure event listeners are attached
+        this._attachEventListeners();
         return ipcRenderer.invoke('initialize-calendar', config);
     },
 
-    destroy: () => {
-        ipcRenderer.removeAllListeners('calendar-event');
+    destroy: function() {
+        // Don't remove listeners on destroy, just tell the backend to clean up
         return ipcRenderer.invoke('calendar-destroy');
+    },
+
+    // Add a method to explicitly detach listeners when app is shutting down
+    detachListeners: function() {
+        if (this._eventListenersAttached && this._handleCalendarEvent) {
+            ipcRenderer.removeListener('calendar-event', this._handleCalendarEvent);
+            this._eventListenersAttached = false;
+        }
     },
 
     getUpcomingEvents: () => ipcRenderer.invoke("calendar-get-upcoming-events"),

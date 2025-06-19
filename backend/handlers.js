@@ -20,6 +20,7 @@ import { WiFiManager } from "./os/wifi.js";
 import { SystemInfoManager } from "./os/information.js";
 import { deintegrate } from "./link/link.js";
 import Main from "electron/main";
+import { emulateInvoke } from "./assistant/helpers.js";
 
 let latestErrorData = {
     errors: [],
@@ -207,8 +208,6 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
             console.error('Get CPU info error:', error);
@@ -921,57 +920,44 @@ export function setup(mainWindow) {
     // Spotify integration
 
     ipcMain.handle("initialize-spotify", async (event, config) => {
-        const forwardEvent = (event, data) => {
-            if (mainWindow?.webContents) {
-                mainWindow.webContents.send("spotify-event", { event, data });
+        const forwardEvent = (eventName, data) => {
+            // Safely send events to renderer
+            try {
+                if (!mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('spotify-event', { 
+                        event: eventName, 
+                        data 
+                    });
+                }
+            } catch (error) {
+                console.error('Error forwarding spotify event:', error);
             }
         };
 
         try {
-            if (SpotifyService) {
-                SpotifyService.destroy();
+            if (!SpotifyService) {
+                SpotifyService = new SpotifyClient({
+                    ...config,
+                    autoSelectDevice: config?.autoSelectDevice ?? true,
+                });
+                
+                // Setup event forwarding
+                SpotifyService.on("authInitialized", (data) => forwardEvent("authInitialized", data));
+                SpotifyService.on("authUrlVisited", () => forwardEvent("authUrlVisited"));
+                SpotifyService.on("authenticated", (data) => forwardEvent("authenticated", data));
+                SpotifyService.on("tokenRefreshed", (data) => forwardEvent("tokenRefreshed", data));
+                SpotifyService.on("ready", (data) => forwardEvent("ready", data));
+                SpotifyService.on("deviceSelected", (data) => forwardEvent("deviceSelected", data));
+                SpotifyService.on("warning", (warning) => forwardEvent("warning", warning.message));
+                SpotifyService.on("error", (error) => forwardEvent("error", error.message));
             }
 
-            SpotifyService = new SpotifyClient({
-                ...config,
-                autoSelectDevice: config?.autoSelectDevice ?? true,
-            });
-
-            SpotifyService.on("authInitialized", (data) => {
-                forwardEvent("authInitialized", data);
-            });
-
-            SpotifyService.on("authUrlVisited", () => {
-                forwardEvent("authUrlVisited");
-            });
-
-            SpotifyService.on("authenticated", (data) => {
-                forwardEvent("authenticated", data);
-            });
-
-            SpotifyService.on("tokenRefreshed", (data) => {
-                forwardEvent("tokenRefreshed", data);
-            });
-
-            SpotifyService.on("ready", (data) => {
-                forwardEvent("ready", data);
-            });
-
-            SpotifyService.on("deviceSelected", (data) => {
-                forwardEvent("deviceSelected", data);
-            });
-
-            SpotifyService.on("warning", (warning) => {
-                forwardEvent("warning", warning.message);
-            });
-
-            SpotifyService.on("error", (error) => {
-                forwardEvent("error", error.message);
-            });
-
+            // Always initialize, even if we already have the service
             const result = await SpotifyService.initialize();
             return { success: true, ...result };
         } catch (error) {
+            console.error("Spotify initialization error:", error);
+            forwardEvent("error", error.message);
             return { success: false, error: error.message };
         }
     });
@@ -1002,10 +988,15 @@ export function setup(mainWindow) {
 
     ipcMain.handle("spotify-destroy", () => {
         if (SpotifyService) {
+            // Only remove the internal service resources, not the service itself
             SpotifyService.destroy();
-            SpotifyService = null;
+            
+            // But keep the SpotifyService instance and its event listeners
+            // Don't set SpotifyService = null
+            
+            return { success: true };
         }
-        return { success: true };
+        return { success: false, error: "No active spotify service" };
     });
 
     ipcMain.handle("spotify-play", async (event, options) => {
@@ -1131,50 +1122,43 @@ export function setup(mainWindow) {
     // Google Calendar integration
 
     ipcMain.handle("initialize-calendar", async (event, config) => {
-        const forwardEvent = (event, data) => {
-            if (mainWindow?.webContents) {
-                mainWindow.webContents.send("calendar-event", { event, data });
+        const forwardEvent = (eventName, data) => {
+            // Safely send events to renderer
+            try {
+                if (!mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('calendar-event', { 
+                        event: eventName, 
+                        data 
+                    });
+                }
+            } catch (error) {
+                console.error('Error forwarding calendar event:', error);
             }
         };
 
         try {
-            if (CalendarService) {
-                CalendarService.destroy();
+            if (!CalendarService) {
+                CalendarService = new GoogleCalendarClient(config);
+                
+                // Setup event forwarding
+                CalendarService.on("authInitialized", (data) => forwardEvent("authInitialized", data));
+                CalendarService.on("authUrlVisited", (data) => forwardEvent("authUrlVisited", data));
+                CalendarService.on("authenticated", (data) => forwardEvent("authenticated", data));
+                CalendarService.on("ready", (data) => forwardEvent("ready", data));
+                CalendarService.on("error", (error) => forwardEvent("error", { message: error.message }));
+                CalendarService.on("tokenRefreshed", (data) => forwardEvent("tokenRefreshed", data));
             }
 
-            CalendarService = new GoogleCalendarClient(config);
-
-            CalendarService.on("authInitialized", (data) => {
-                forwardEvent("authInitialized", data);
-            });
-
-            CalendarService.on("authUrlVisited", () => {
-                forwardEvent("authUrlVisited");
-            });
-
-            CalendarService.on("authenticated", (data) => {
-                forwardEvent("authenticated", data);
-            });
-
-            CalendarService.on("tokenRefreshed", (data) => {
-                forwardEvent("tokenRefreshed", data);
-            });
-
-            CalendarService.on("ready", (data) => {
-                forwardEvent("ready", data);
-            });
-
-            CalendarService.on("error", (error) => {
-                forwardEvent("error", error.message);
-            });
-
+            // Always initialize, even if we already have the service
             const result = await CalendarService.initialize();
-
-            return { success: true, ...result };
+            return result;
         } catch (error) {
+            console.error("Calendar initialization error:", error);
+            forwardEvent("error", { message: error.message });
             return { success: false, error: error.message };
         }
     });
+
 
     const handleCalendarCall = async (operation) => {
         try {
@@ -1192,10 +1176,15 @@ export function setup(mainWindow) {
 
     ipcMain.handle("calendar-destroy", () => {
         if (CalendarService) {
+            // Only remove the internal service resources, not the service itself
             CalendarService.destroy();
-            CalendarService = null;
+            
+            // But keep the CalendarService instance and its event listeners
+            // Don't set CalendarService = null
+            
+            return { success: true };
         }
-        return { success: true };
+        return { success: false, error: "No active calendar service" };
     });
 
     ipcMain.handle(
@@ -1269,7 +1258,6 @@ export function setup(mainWindow) {
 
     ipcMain.handle("calendar-get-upcoming-events", async (event) => {
         const calendars = await handleCalendarCall(() => CalendarService.getCalendarList());
-        console.log(calendars);
 
         const now = new Date().toISOString();
 
@@ -1345,5 +1333,47 @@ export function setup(mainWindow) {
 
     ipcMain.handle("memos-get", async (event) => memos.getNotes());
 
-    ipcMain.handle("deintegrate", async (event, integration) => deintegrate(integration))
+    ipcMain.handle("deintegrate", async (event, integration) => {
+        deintegrate(integration);
+
+        let integrationObject;
+        let initializationFunction;
+        switch (integration) {
+            case "spotify":
+                integrationObject = SpotifyService;
+                initializationFunction = () => {
+                    try {
+                        SpotifyService.initialize();
+                    } catch (err) {
+                        console.warn("Error re-initializing Spotify:", err);
+                    }
+                };
+                break;
+
+            case "google":
+                integrationObject = CalendarService;
+                initializationFunction = () => {
+                    try {
+                        CalendarService.initialize();
+                    } catch (err) {
+                        console.warn("Error re-initializing Calendar:", err);
+                    }
+                };
+                break;
+    
+            default:
+                break;
+        }
+
+        if (!integrationObject) return { success: false, message: "Integration not found" };
+        
+        try {
+            integrationObject.destroy();
+            initializationFunction();
+            return { success: true };
+        } catch (err) {
+            console.warn("Error during deintegration:", err);
+            return { success: false, error: err.message };
+        }
+    })
 }

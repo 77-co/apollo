@@ -36,6 +36,8 @@ class Calendar {
         window.addEventListener("calendar-event", async (e) => {
             const { event, data } = e.detail;
 
+            console.log(event, data);
+
             switch (event) {
                 case "authInitialized":
                     if (data.qrCode) {
