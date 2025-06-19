@@ -673,10 +673,10 @@ export function setup(mainWindow) {
         if (lowPowerActive === enabled) return;
 
         if (enabled) {
-            await setBrightness(20, 1000);
+            setBrightness(20, 300);
             mainWindow.loadFile("./static/low-power.html");
         } else {
-            await setBrightness(100, 1000);
+            setBrightness(100, 300);
             mainWindow.loadFile("./static/index.html");
         }
 
