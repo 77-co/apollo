@@ -21,7 +21,6 @@ class DebugServer {
     // Middleware to parse URL-encoded bodies
     this.app.use(express.urlencoded({ extended: true }));
     
-    // Add timestamp to all requests
     this.app.use((req, res, next) => {
       req.timestamp = new Date().toISOString();
       console.log(`${req.method} ${req.path} - ${req.timestamp}`);
@@ -31,7 +30,7 @@ class DebugServer {
 
   setupRoutes() {
 
-    // IPC channels list
+    // channels list
     this.app.get('/ipc/channels', (req, res) => {
       try {
         const channels = Array.from(ipcMain._invokeHandlers.keys());
@@ -49,7 +48,7 @@ class DebugServer {
       }
     });
 
-    // IPC invoke endpoint
+    // invoke an ipc channel
     this.app.post('/ipc/invoke/:channel', async (req, res) => {
       const { channel } = req.params;
       const { args = [] } = req.body;
@@ -74,7 +73,7 @@ class DebugServer {
       }
     });
 
-    // Test IPC connection
+    // Test connection
     this.app.get('/ipc/test', async (req, res) => {
       try {
         // List all available handlers

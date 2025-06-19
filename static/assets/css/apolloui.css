@@ -133,7 +133,7 @@ input:checked+.toggle-slider:before {
     box-shadow: none;
 }
 
-.setting-row:has(.scan-list), .setting-row:has(.link-list) {
+.setting-row:has(.scan-list), .setting-row:has(.link-list), .setting-row:has(.info-list)  {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
@@ -145,6 +145,7 @@ input:checked+.toggle-slider:before {
     gap: .8rem;
 }
 
+.info-list .el,
 .link-list .el,
 .scan-list .el {
     background-color: var(--theme-bg-3);

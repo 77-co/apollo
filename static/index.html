@@ -143,6 +143,10 @@
 
                     <span class="category" data-category-id="linkSettings"><span
                             class="material-symbols-outlined fill">link</span>Apollo Link</span>
+
+                    <span class="category" data-category-id="deviceinfoSettings"><span
+                            class="material-symbols-outlined fill">info</span>O urządzeniu</span>
+
                 </div>
                 <div class="content">
                     <div class="category" id="aiSettings">
@@ -336,6 +340,53 @@
                                     <button class="button" id="googleLinkButton">
                                         Połącz
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="category" id="deviceinfoSettings">
+                        <div class="setting-row">
+                            <div class="setting-text">
+                                <h3 class="setting-title">Informacje o urządzeniu</h3>
+                                <p class="setting-description">Ta sekcja zawiera informacje o urządzeniu, wersji oprogramowania oraz sieci.</p>
+                            </div>
+                            <div class="info-list">
+                                <div class="info-section">
+                                    <div class="info-row">
+                                        <span class="info-label">Wersja systemu:</span>
+                                        <span class="info-value" id="systemVersion">Ładowanie...</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-value" id="buildInfo">Ładowanie...</span>
+                                    </div>
+                                </div>
+
+                                <div class="info-section">
+                                    <h3>Specyfikacja techniczna</h3>
+                                    <div class="info-row">
+                                        <span class="info-label">Procesor:</span>
+                                        <span class="info-value" id="cpuInfo">Ładowanie...</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Pamięć RAM:</span>
+                                        <span class="info-value" id="totalMemory">Ładowanie...</span>
+                                    </div>
+                                </div>
+
+                                <div class="info-section">
+                                    <h3>Sieć i łączność</h3>
+                                    <div class="info-row">
+                                        <span class="info-label">Aktywna sieć:</span>
+                                        <span class="info-value" id="activeNetwork">Ładowanie...</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Adres IP:</span>
+                                        <span class="info-value" id="deviceIpAddress">Ładowanie...</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Adres MAC:</span>
+                                        <span class="info-value" id="macAddress">Ładowanie...</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -719,6 +770,7 @@
     <script src="./assets/js/control.js"></script>
     <script src="./assets/js/apps.js"></script>
     <script src="./assets/js/screensaver.js"></script>
+    <script src="./assets/js/gradient.js"></script>
 
     <script src="./assets/js/services/mobidziennik.js"></script>
     <script src="./assets/js/services/link.js"></script>
@@ -728,6 +780,7 @@
     <script src="./assets/js/services/settings.js"></script>
     <script src="./assets/js/services/assistant.js"></script>
     <script src="./assets/js/services/memos.js"></script>
+    <script src="./assets/js/services/information.js"></script>
     <script src="./assets/js/services/theme-colors.js"></script>
 
     <script src="./assets/js/services/spotify.js"></script>

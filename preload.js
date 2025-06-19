@@ -255,8 +255,6 @@ const SystemInformationService = {
             ipcRenderer.invoke('system-get-usb-devices'),
         getBluetooth: () =>
             ipcRenderer.invoke('system-get-bluetooth-devices'),
-        getPrinters: () =>
-            ipcRenderer.invoke('system-get-printers'),
         getAudio: () =>
             ipcRenderer.invoke('system-get-audio-devices')
     },
@@ -281,94 +279,6 @@ const SystemInformationService = {
             ipcRenderer.invoke('system-get-repository')
     },
 
-    getComprehensive: () =>
-        ipcRenderer.invoke('system-get-comprehensive-info'),
-
-    getQuickStatus: async () => {
-        try {
-            const [system, cpu, memory, load] = await Promise.all([
-                ipcRenderer.invoke('system-get-system-status'),
-                ipcRenderer.invoke('system-get-cpu-info'),
-                ipcRenderer.invoke('system-get-memory-info'),
-                ipcRenderer.invoke('system-get-current-load')
-            ]);
-
-            return {
-                success: true,
-                data: {
-                    timestamp: '2025-06-18 09:45:30',
-                    user: 'pingwiniu',
-                    system: system.data,
-                    cpu: cpu.data,
-                    memory: memory.data,
-                    load: load.data
-                }
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-    },
-
-    getNetworkStatus: async () => {
-        try {
-            const [interfaces, connections, wifiConnections] = await Promise.all([
-                ipcRenderer.invoke('system-get-network-info'),
-                ipcRenderer.invoke('system-get-wifi-connections'),
-                ipcRenderer.invoke('system-get-wifi-interfaces')
-            ]);
-
-            return {
-                success: true,
-                data: {
-                    timestamp: '2025-06-18 09:45:30',
-                    user: 'pingwiniu',
-                    network: interfaces.data,
-                    wifi: {
-                        connections: connections.data,
-                        interfaces: wifiConnections.data
-                    }
-                }
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-    },
-
-    getDeviceOverview: async () => {
-        try {
-            const [usb, bluetooth, printers, audio] = await Promise.all([
-                ipcRenderer.invoke('system-get-usb-devices'),
-                ipcRenderer.invoke('system-get-bluetooth-devices'),
-                ipcRenderer.invoke('system-get-printers'),
-                ipcRenderer.invoke('system-get-audio-devices')
-            ]);
-
-            return {
-                success: true,
-                data: {
-                    timestamp: '2025-06-18 09:45:30',
-                    user: 'pingwiniu',
-                    devices: {
-                        usb: usb.data,
-                        bluetooth: bluetooth.data,
-                        printers: printers.data,
-                        audio: audio.data
-                    }
-                }
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-    }
 };
 
 const rss = {
@@ -451,8 +361,6 @@ const debuggerService = {
                     debuggerService.sendCurrentErrors();
                 }
             }, debuggerService.config.autoSendInterval);
-
-            console.log('✅ Debugger service initialized successfully');
 
         } catch (error) {
             console.error('❌ Error initializing debugger service:', error);
