@@ -17,9 +17,11 @@ const execAsync = promisify(exec);
 // Global variable for easing frequency (milliseconds between steps)
 const EASING_FREQUENCY = 50;
 
+const DISPLAY_ID = process.env.DISPLAY_ID || "rpi_backlight"; // Default to Raspberry Pi display
+
 // Path to the brightness control file
-const BRIGHTNESS_PATH = "/sys/class/backlight/rpi_backlight/brightness";
-const MAX_BRIGHTNESS_PATH = "/sys/class/backlight/rpi_backlight/max_brightness";
+const BRIGHTNESS_PATH = `/sys/class/backlight/${DISPLAY_ID}/brightness`;
+const MAX_BRIGHTNESS_PATH = `/sys/class/backlight/${DISPLAY_ID}/max_brightness`;
 
 // Cache for current brightness and max brightness
 let currentBrightness = null;
