@@ -68,12 +68,11 @@ export function setup(mainWindow) {
 
     //DEBUGGER
 
-    ipcMain.on('console-errors-captured', (event, errorData) => {
-
+    ipcMain.on("console-errors-captured", (event, errorData) => {
         // Store the latest error data
         latestErrorData = {
             ...errorData,
-            receivedAt: new Date().toISOString()
+            receivedAt: new Date().toISOString(),
         };
 
         if (global.debugServer && global.debugServer.getStatus().isRunning) {
@@ -81,48 +80,48 @@ export function setup(mainWindow) {
         }
 
         if (errorData.errors.length > 0) {
-            console.log('📋 Recent errors:', errorData.errors.slice(-3));
+            console.log("📋 Recent errors:", errorData.errors.slice(-3));
         }
     });
 
-    ipcMain.handle('refresh', () => {
-        mainWindow.webContents.send('refresh', {
-            event: 'force-reload',
+    ipcMain.handle("refresh", () => {
+        mainWindow.webContents.send("refresh", {
+            event: "force-reload",
             data: {
-                triggeredBy: 'main-process',
-                timestamp: new Date().toISOString()
-            }
+                triggeredBy: "main-process",
+                timestamp: new Date().toISOString(),
+            },
         });
         return { success: true };
     });
 
     // Updated to just return cached error data immediately
-    ipcMain.handle('request-error-logs', () => {
+    ipcMain.handle("request-error-logs", () => {
         return {
             success: true,
             data: latestErrorData,
             timestamp: new Date().toISOString(),
-            cached: true
+            cached: true,
         };
     });
 
     const refreshPage = () => {
-        mainWindow.webContents.send('refresh', {
-            event: 'force-reload',
+        mainWindow.webContents.send("refresh", {
+            event: "force-reload",
             data: {
-                method: 'direct-call',
-                timestamp: new Date().toISOString()
-            }
+                method: "direct-call",
+                timestamp: new Date().toISOString(),
+            },
         });
     };
 
     const collectLogs = () => {
-        mainWindow.webContents.send('errorlog', {
-            event: 'collect-logs',
+        mainWindow.webContents.send("errorlog", {
+            event: "collect-logs",
             data: {
-                method: 'direct-call',
-                timestamp: new Date().toISOString()
-            }
+                method: "direct-call",
+                timestamp: new Date().toISOString(),
+            },
         });
     };
 
@@ -130,7 +129,7 @@ export function setup(mainWindow) {
         return {
             success: true,
             data: latestErrorData,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         };
     };
 
@@ -139,10 +138,8 @@ export function setup(mainWindow) {
         collectLogs,
         getErrorLogs,
         getWindow: () => mainWindow,
-        getLatestErrors: () => latestErrorData
+        getLatestErrors: () => latestErrorData,
     };
-    
-
 
     // INFORMATION HANDLERS
 
@@ -154,14 +151,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get WiFi interfaces error:', error);
+            console.error("Get WiFi interfaces error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -172,14 +167,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get WiFi connections error:', error);
+            console.error("Get WiFi connections error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -190,14 +183,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get WiFi networks error:', error);
+            console.error("Get WiFi networks error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -211,10 +202,10 @@ export function setup(mainWindow) {
                 data: result,
             };
         } catch (error) {
-            console.error('Get CPU info error:', error);
+            console.error("Get CPU info error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -225,14 +216,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get memory info error:', error);
+            console.error("Get memory info error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -243,14 +232,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get battery info error:', error);
+            console.error("Get battery info error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -261,14 +248,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get network info error:', error);
+            console.error("Get network info error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -279,14 +264,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get graphics info error:', error);
+            console.error("Get graphics info error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -297,14 +280,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get storage info error:', error);
+            console.error("Get storage info error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -316,14 +297,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get USB devices error:', error);
+            console.error("Get USB devices error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -334,14 +313,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get Bluetooth devices error:', error);
+            console.error("Get Bluetooth devices error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -352,14 +329,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get audio devices error:', error);
+            console.error("Get audio devices error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -371,14 +346,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get current load error:', error);
+            console.error("Get current load error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -389,14 +362,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get system status error:', error);
+            console.error("Get system status error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -407,14 +378,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get process info error:', error);
+            console.error("Get process info error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -426,14 +395,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get latest commit error:', error);
+            console.error("Get latest commit error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -444,14 +411,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get repository info error:', error);
+            console.error("Get repository info error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -463,14 +428,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: result,
-                
-                
             };
         } catch (error) {
-            console.error('Get comprehensive system info error:', error);
+            console.error("Get comprehensive system info error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -482,14 +445,12 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: { repository: SystemInfoService.getRepository() },
-                
-                
             };
         } catch (error) {
-            console.error('Set repository error:', error);
+            console.error("Set repository error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -500,18 +461,15 @@ export function setup(mainWindow) {
             return {
                 success: true,
                 data: { repository: result },
-                
-                
             };
         } catch (error) {
-            console.error('Get repository error:', error);
+            console.error("Get repository error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
-
 
     // Mobidziennik events
 
@@ -520,13 +478,13 @@ export function setup(mainWindow) {
             const result = await MobidziennikService.execute(params);
             return {
                 success: true,
-                data: result
+                data: result,
             };
         } catch (error) {
-            console.error('Mobidziennik get events error:', error);
+            console.error("Mobidziennik get events error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -536,13 +494,13 @@ export function setup(mainWindow) {
             const result = await MobidziennikService.getUpcoming(params);
             return {
                 success: true,
-                data: result
+                data: result,
             };
         } catch (error) {
-            console.error('Mobidziennik get upcoming error:', error);
+            console.error("Mobidziennik get upcoming error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -552,13 +510,13 @@ export function setup(mainWindow) {
             const result = await MobidziennikService.getByType();
             return {
                 success: true,
-                data: result
+                data: result,
             };
         } catch (error) {
-            console.error('Mobidziennik get by type error:', error);
+            console.error("Mobidziennik get by type error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -568,13 +526,13 @@ export function setup(mainWindow) {
             const result = await MobidziennikService.getDateRange(params);
             return {
                 success: true,
-                data: result
+                data: result,
             };
         } catch (error) {
-            console.error('Mobidziennik get date range error:', error);
+            console.error("Mobidziennik get date range error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -582,34 +540,34 @@ export function setup(mainWindow) {
     // RSS
     const rssManager = new RSSManager();
 
-    ipcMain.handle("rss-get-news", async (event, category = 'tech') => {
+    ipcMain.handle("rss-get-news", async (event, category = "tech") => {
         try {
             const news = await rssManager.getNews(category);
             return {
                 success: true,
-                news: news
+                news: news,
             };
         } catch (error) {
-            console.error('RSS get news error:', error);
+            console.error("RSS get news error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
 
-    ipcMain.handle("rss-refresh-news", async (event, category = 'tech') => {
+    ipcMain.handle("rss-refresh-news", async (event, category = "tech") => {
         try {
             const news = await rssManager.refreshNews(category);
             return {
                 success: true,
-                news: news
+                news: news,
             };
         } catch (error) {
-            console.error('RSS refresh news error:', error);
+            console.error("RSS refresh news error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
@@ -619,17 +577,16 @@ export function setup(mainWindow) {
             const allNews = await rssManager.getAllCategories();
             return {
                 success: true,
-                news: allNews
+                news: allNews,
             };
         } catch (error) {
-            console.error('RSS get all categories error:', error);
+            console.error("RSS get all categories error:", error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
             };
         }
     });
-
 
     // OS
     const wifiManager = new WiFiManager();
@@ -705,6 +662,8 @@ export function setup(mainWindow) {
 
             wake.start();
             // Initialize microphone before processing loop
+
+            wake.removeAllListeners();
             wake.on("wake", () => {
                 if (lowPowerActive) {
                     setLowPower(false);
@@ -785,7 +744,7 @@ export function setup(mainWindow) {
 
     // Air Quality / Weather integration
 
-        ipcMain.handle("get-weather", async (event, params) => {
+    ipcMain.handle("get-weather", async (event, params) => {
         try {
             const weatherData = await WeatherPlugin.execute(params);
             return { success: true, data: weatherData };
@@ -904,7 +863,6 @@ export function setup(mainWindow) {
     );
 
     ipcMain.handle("get-air-quality-complete", async (event, params) => {
-
         try {
             const airQualityData = await WeatherPlugin.getAirQuality({
                 location: params,
@@ -927,13 +885,13 @@ export function setup(mainWindow) {
             // Safely send events to renderer
             try {
                 if (!mainWindow.isDestroyed()) {
-                    mainWindow.webContents.send('spotify-event', { 
-                        event: eventName, 
-                        data 
+                    mainWindow.webContents.send("spotify-event", {
+                        event: eventName,
+                        data,
                     });
                 }
             } catch (error) {
-                console.error('Error forwarding spotify event:', error);
+                console.error("Error forwarding spotify event:", error);
             }
         };
 
@@ -943,16 +901,32 @@ export function setup(mainWindow) {
                     ...config,
                     autoSelectDevice: config?.autoSelectDevice ?? true,
                 });
-                
+
                 // Setup event forwarding
-                SpotifyService.on("authInitialized", (data) => forwardEvent("authInitialized", data));
-                SpotifyService.on("authUrlVisited", () => forwardEvent("authUrlVisited"));
-                SpotifyService.on("authenticated", (data) => forwardEvent("authenticated", data));
-                SpotifyService.on("tokenRefreshed", (data) => forwardEvent("tokenRefreshed", data));
-                SpotifyService.on("ready", (data) => forwardEvent("ready", data));
-                SpotifyService.on("deviceSelected", (data) => forwardEvent("deviceSelected", data));
-                SpotifyService.on("warning", (warning) => forwardEvent("warning", warning.message));
-                SpotifyService.on("error", (error) => forwardEvent("error", error.message));
+                SpotifyService.on("authInitialized", (data) =>
+                    forwardEvent("authInitialized", data)
+                );
+                SpotifyService.on("authUrlVisited", () =>
+                    forwardEvent("authUrlVisited")
+                );
+                SpotifyService.on("authenticated", (data) =>
+                    forwardEvent("authenticated", data)
+                );
+                SpotifyService.on("tokenRefreshed", (data) =>
+                    forwardEvent("tokenRefreshed", data)
+                );
+                SpotifyService.on("ready", (data) =>
+                    forwardEvent("ready", data)
+                );
+                SpotifyService.on("deviceSelected", (data) =>
+                    forwardEvent("deviceSelected", data)
+                );
+                SpotifyService.on("warning", (warning) =>
+                    forwardEvent("warning", warning.message)
+                );
+                SpotifyService.on("error", (error) =>
+                    forwardEvent("error", error.message)
+                );
             }
 
             // Always initialize, even if we already have the service
@@ -993,10 +967,10 @@ export function setup(mainWindow) {
         if (SpotifyService) {
             // Only remove the internal service resources, not the service itself
             SpotifyService.destroy();
-            
+
             // But keep the SpotifyService instance and its event listeners
             // Don't set SpotifyService = null
-            
+
             return { success: true };
         }
         return { success: false, error: "No active spotify service" };
@@ -1129,27 +1103,39 @@ export function setup(mainWindow) {
             // Safely send events to renderer
             try {
                 if (!mainWindow.isDestroyed()) {
-                    mainWindow.webContents.send('calendar-event', { 
-                        event: eventName, 
-                        data 
+                    mainWindow.webContents.send("calendar-event", {
+                        event: eventName,
+                        data,
                     });
                 }
             } catch (error) {
-                console.error('Error forwarding calendar event:', error);
+                console.error("Error forwarding calendar event:", error);
             }
         };
 
         try {
             if (!CalendarService) {
                 CalendarService = new GoogleCalendarClient(config);
-                
+
                 // Setup event forwarding
-                CalendarService.on("authInitialized", (data) => forwardEvent("authInitialized", data));
-                CalendarService.on("authUrlVisited", (data) => forwardEvent("authUrlVisited", data));
-                CalendarService.on("authenticated", (data) => forwardEvent("authenticated", data));
-                CalendarService.on("ready", (data) => forwardEvent("ready", data));
-                CalendarService.on("error", (error) => forwardEvent("error", { message: error.message }));
-                CalendarService.on("tokenRefreshed", (data) => forwardEvent("tokenRefreshed", data));
+                CalendarService.on("authInitialized", (data) =>
+                    forwardEvent("authInitialized", data)
+                );
+                CalendarService.on("authUrlVisited", (data) =>
+                    forwardEvent("authUrlVisited", data)
+                );
+                CalendarService.on("authenticated", (data) =>
+                    forwardEvent("authenticated", data)
+                );
+                CalendarService.on("ready", (data) =>
+                    forwardEvent("ready", data)
+                );
+                CalendarService.on("error", (error) =>
+                    forwardEvent("error", { message: error.message })
+                );
+                CalendarService.on("tokenRefreshed", (data) =>
+                    forwardEvent("tokenRefreshed", data)
+                );
             }
 
             // Always initialize, even if we already have the service
@@ -1161,7 +1147,6 @@ export function setup(mainWindow) {
             return { success: false, error: error.message };
         }
     });
-
 
     const handleCalendarCall = async (operation) => {
         try {
@@ -1181,10 +1166,10 @@ export function setup(mainWindow) {
         if (CalendarService) {
             // Only remove the internal service resources, not the service itself
             CalendarService.destroy();
-            
+
             // But keep the CalendarService instance and its event listeners
             // Don't set CalendarService = null
-            
+
             return { success: true };
         }
         return { success: false, error: "No active calendar service" };
@@ -1260,16 +1245,20 @@ export function setup(mainWindow) {
     });
 
     ipcMain.handle("calendar-get-upcoming-events", async (event) => {
-        const calendars = await handleCalendarCall(() => CalendarService.getCalendarList());
+        const calendars = await handleCalendarCall(() =>
+            CalendarService.getCalendarList()
+        );
 
         const now = new Date().toISOString();
 
         const allEvents = await Promise.all(
             calendars.result.map(async (cal) => {
-                const events = await handleCalendarCall(() => CalendarService.getEvents(cal.id, {
-                    timeMin: now,
-                    maxResults: 50, // adjust as needed
-                }));
+                const events = await handleCalendarCall(() =>
+                    CalendarService.getEvents(cal.id, {
+                        timeMin: now,
+                        maxResults: 50, // adjust as needed
+                    })
+                );
                 return events.result.map((event) => ({
                     ...event,
                     calendarId: cal.id,
@@ -1321,6 +1310,10 @@ export function setup(mainWindow) {
 
     ipcMain.handle("setting-get", async (event, key) => settings.get(key));
 
+    // App Stuff™
+    ipcMain.handle("appstuff-set", async (event, key, value) => store.set("appstuff." + key, value));
+    ipcMain.handle("appstuff-get", async (event, key) => store.get("appstuff." + key));
+
     // Memos integration
     ipcMain.handle("memo-create", async (event, title, value) =>
         memos.createNote(title, value)
@@ -1363,13 +1356,14 @@ export function setup(mainWindow) {
                     }
                 };
                 break;
-    
+
             default:
                 break;
         }
 
-        if (!integrationObject) return { success: false, message: "Integration not found" };
-        
+        if (!integrationObject)
+            return { success: false, message: "Integration not found" };
+
         try {
             integrationObject.destroy();
             initializationFunction();
@@ -1378,5 +1372,5 @@ export function setup(mainWindow) {
             console.warn("Error during deintegration:", err);
             return { success: false, error: err.message };
         }
-    })
+    });
 }

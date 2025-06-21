@@ -89,7 +89,7 @@ span.material-symbols-outlined {
 }
 
 .bodyWrapper.keyboardActive {
-    transform: translateY(-10%) scale(.75);
+    transform: translateY(-25%) scale(.45);
     border-radius: 1.5rem;
     pointer-events: none;
 }
@@ -216,7 +216,6 @@ span.material-symbols-outlined {
 
 #uiContainer.shaded {
     transform: scale(0.8);
-    filter: blur(10px);
 }
 
 .container {
@@ -230,8 +229,8 @@ span.material-symbols-outlined {
     box-sizing: border-box;
     gap: 0.5rem;
 
-    transition: filter 0.5s, transform 0.5s;
-    will-change: filter, transform;
+    transition: transform 0.5s;
+    will-change: transform;
 }
 
 .container .col {

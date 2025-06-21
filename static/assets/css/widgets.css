@@ -732,3 +732,89 @@
     font-size: 0.8rem;
     font-weight: 300;
 }
+
+/* Stock Market widget */
+#stock {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-image:
+            radial-gradient(ellipse at top center, rgba(16, 255, 56, 0.4), transparent 70%),
+            radial-gradient(ellipse at bottom right, rgba(29, 255, 168, 0.3), transparent 70%);
+
+    --positive-chart: #10ff38;
+    --negative-chart: #ff1010;
+}
+
+#stock.negative {
+    background-image:
+            radial-gradient(ellipse at top center, rgba(255, 16, 16, 0.4), transparent 70%),
+            radial-gradient(ellipse at bottom right, rgba(255, 76, 115, 0.3), transparent 70%);
+}
+
+#stock .bg-fade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+    background-image: linear-gradient(to right, var(--theme-bg-2) 30%, transparent 90%)
+}
+
+#stock #widgetChart {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+#stock .content {
+    position: absolute;
+    width: 30%;
+    top: 0;
+    left: 0;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 30;
+
+    gap: 1rem;
+}
+
+#stock .content span:first-child {
+    font-size: 2rem;
+    font-weight: 400;
+}
+
+#stock #changePercent {
+    font-size: 1.5rem;
+    font-weight: 700;
+
+    color: var(--positive-chart);
+}
+
+#stock.negative #changePercent {
+    color: var(--negative-chart);
+}
+
+#stock .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    z-index: 30;
+}
+
+#stock .header h2 {
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin: 0;
+}

@@ -83,10 +83,10 @@
                 <span class="appTitle">Pogoda</span>
                 <div class="flex">
                     <div class="child">
-                        <h2>Poznań</h2>
+                        <h2 class="cityName">Poznań</h2>
                         <h1 class="currentTemperature"></h1>
                         <h3 class="currentState"></h3>
-                        <div class="forecast">
+                        <div class="forecast" id="weatherWeekly">
                             <div>
                                 <span>Pt.</span>
                                 <span class="material-symbols-outlined fill">cloudy</span>
@@ -124,7 +124,7 @@
                 <span class="appTitle">Ustawienia</span>
                 <div class="categories">
                     <span class="category" data-category-id="aiSettings"><span
-                            class="material-symbols-outlined fill">network_intelligence</span>Apollo AI</span>
+                            class="material-symbols-outlined fill">network_intelligence</span>Apollo i Ty</span>
 
                     <span class="category" data-category-id="uiSettings"><span
                             class="material-symbols-outlined fill">brush</span>Wygląd</span>
@@ -170,6 +170,16 @@
                             <div class="input-wrapper">
                                 <input type="text" onchange="setting(this)" class="setting input"
                                     data-setting-key="ai.name">
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-text">
+                                <h3 class="setting-title">Twoje miasto</h3>
+                                <p class="setting-description">Apollo będzie wiedzieć z jakiej lokalizacji domyślnie pobierać pogodę. Lokalizacja może zostać również użyta przez Apollo do personalizacji innych usług.</p>
+                            </div>
+                            <div class="input-wrapper">
+                                <input type="text" onblur="(async () => {await fetchCity();updateWeather()})();" onchange="setting(this)" class="setting input"
+                                    data-setting-key="ai.city">
                             </div>
                         </div>
                     </div>
@@ -476,7 +486,7 @@
                     <span class="date shortdate"></span>
                 </div>
                 <div class="widget control">
-                    <button onclick="toggleDarkMode(this)" id="darkModeButton"">
+                    <button onclick="toggleDarkMode(this)" oncontextmenu="openApp('settings', $(this).parent().get(0));animateContentChange('uiSettings')" id="darkModeButton"">
                             <span class=" material-symbols-outlined">
                         dark_mode
                         </span>
@@ -509,7 +519,7 @@
                     </button>
                 </div>
                 <div class="widget lg" id="weather" onclick="openApp('weatherApp', this)">
-                    <h2>Poznań</h2>
+                    <h2 class="cityName">Poznań</h2>
                     <h1></h1>
                     <div class="forecast">
                         <div>
@@ -674,9 +684,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="widget lg" id="stock">
+                    <div class="bg-fade"></div>
+                    <canvas id="widgetChart"></canvas>
+                    <div class="content">
+                        <span>AAPL</span>
+                        <span id="changePercent"></span>
+                    </div>
 
+                    <div class="header">
+                        <h2>Giełda</h2>
+                    </div>
+                </div>
             </div>
-
             <div class="col" id="apolloScreen">
                 <!-- Idle Screen -->
                 <div class="screen idleScreen active">
@@ -782,6 +802,7 @@
     <script src="./assets/js/services/memos.js"></script>
     <script src="./assets/js/services/information.js"></script>
     <script src="./assets/js/services/theme-colors.js"></script>
+    <script src="./assets/js/services/stock.js"></script>
 
     <script src="./assets/js/services/spotify.js"></script>
     <script src="./assets/js/services/calendar.js"></script>

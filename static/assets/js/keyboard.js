@@ -123,9 +123,10 @@ function insertText(text) {
     const newPosition = start + text.length;
     focusedElement.setSelectionRange(newPosition, newPosition);
     focusedElement.scrollLeft = focusedElement.scrollWidth;
-    
+
     // Trigger input event for frameworks that listen to it
     focusedElement.dispatchEvent(new Event('input', { bubbles: true }));
+    focusedElement.dispatchEvent(new Event("change", { bubbles: true })); // Add change event for compatibility with settings app.
 }
 
 function deleteText() {
@@ -135,21 +136,25 @@ function deleteText() {
     const start = focusedElement.selectionStart;
     const end = focusedElement.selectionEnd;
     const currentValue = focusedElement.value;
-    
+
     if (start !== end) {
         // Delete selected text
-        const newValue = currentValue.substring(0, start) + currentValue.substring(end);
+        const newValue =
+            currentValue.substring(0, start) + currentValue.substring(end);
         focusedElement.value = newValue;
         focusedElement.setSelectionRange(start, start);
     } else if (start > 0) {
         // Delete character before cursor
-        const newValue = currentValue.substring(0, start - 1) + currentValue.substring(start);
+        const newValue =
+            currentValue.substring(0, start - 1) +
+            currentValue.substring(start);
         focusedElement.value = newValue;
         focusedElement.setSelectionRange(start - 1, start - 1);
     }
-    
+
     focusedElement.scrollLeft = focusedElement.scrollWidth;
-    focusedElement.dispatchEvent(new Event('input', { bubbles: true }));
+    focusedElement.dispatchEvent(new Event("input", { bubbles: true }));
+    focusedElement.dispatchEvent(new Event("change", { bubbles: true })); // Add change event for compatibility with settings app.
 }
 
 function insertNewLine() {

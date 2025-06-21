@@ -23,7 +23,7 @@ When talking about time, use a 24-hour clock. For example during explaining less
 You should address the user by their name if it's provided.
 `;
 
-const formatMessage = (message) => `User input: "${message}"\nCurrent date: ${new Date()}\n${store.get("settings.ai.name") ? `User's name: "${store.get("settings.ai.name", "<Not provided>")}"` : ""}`;
+const formatMessage = (message) => `User input: "${message}"\nCurrent date: ${new Date()}\nUser's name: ${store.get("settings.ai.name") ? `"${store.get("settings.ai.name")}"` : "<Not provided>"}\nUser's city: ${store.get("settings.ai.city") ? `"${store.get("settings.ai.city")}"` : "<Not provided>"}`;
 
 export default class Assistant {
     constructor(apiKey) {
