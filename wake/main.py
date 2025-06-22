@@ -20,7 +20,7 @@ processed_texts = set()
 # New parameters for improved detection
 MIN_CONFIDENCE = 0.7  # Minimum confidence threshold
 WAKE_CONFIRMATION_WINDOW = 1.5  # seconds
-WAKE_CONFIRMATION_COUNT = 2  # minimum detections needed
+WAKE_CONFIRMATION_COUNT = 2 # minimum detections needed
 MIN_WORD_DURATION = 0.3  # minimum duration for wake word
 
 # Track recent detections for confirmation
@@ -37,6 +37,9 @@ def denoise(audio_data):
     samples = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32)
     # Less aggressive noise reduction
     reduced = nr.reduce_noise(y=samples, sr=16000, prop_decrease=0.8, stationary=False)
+    # Clip values before casting to avoid invalid value warnings
+    reduced = np.nan_to_num(reduced)  # Replace NaN with zeros
+    reduced = np.clip(reduced, -32768, 32767)  # Ensure values are in int16 range
     return reduced.astype(np.int16).tobytes()
 
 def is_wake_word_valid(word_info):
