@@ -24,10 +24,10 @@ q = queue.Queue()
 processed_texts = set()
 
 # New parameters for improved detection
-MIN_CONFIDENCE = 0.7  # Minimum confidence threshold
-WAKE_CONFIRMATION_WINDOW = 1.5  # seconds
+MIN_CONFIDENCE = 0.6  # Minimum confidence threshold
+WAKE_CONFIRMATION_WINDOW = 1.0  # seconds
 WAKE_CONFIRMATION_COUNT = 2 # minimum detections needed
-MIN_WORD_DURATION = 0.3  # minimum duration for wake word
+MIN_WORD_DURATION = 0.2  # minimum duration for wake word
 
 # Track recent detections for confirmation
 recent_detections = deque(maxlen=10)
@@ -98,6 +98,7 @@ def process_final_result(result):
             wake_detected = True
             # print(f"Valid wake word detected: {word_info['word']} (conf: {word_info['conf']:.3f})")
             print("WAKE")
+            sys.stdout.flush()
             break
     
     # Check for confirmation
@@ -128,8 +129,7 @@ with sd.RawInputStream(samplerate=16000, blocksize=2048, dtype='int16',
             result = json.loads(rec.Result())
             
             # Only process final results for wake word detection
-            if process_final_result(result):
-                sys.stdout.flush()
+            process_final_result(result)
             
             # Clear processed texts on final result
             processed_texts.clear()

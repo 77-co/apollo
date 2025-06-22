@@ -7,6 +7,8 @@ export default class WakeWord extends EventEmitter {
     constructor(config = {}) {
         super();
 
+        
+
         this.scriptPath = config.scriptPath || "wake/main.py";
         this.pythonPath =
             config.pythonPath ||
@@ -25,7 +27,6 @@ export default class WakeWord extends EventEmitter {
         this.process = spawn(this.pythonPath, [this.scriptPath]);
         this.process.stdout.on("data", (data) => {
             const output = data.toString().trim();
-            console.log(output);
             if (output.includes("WAKE") && !this.paused) {
                 this.emit("wake");
                 this.paused = true;
