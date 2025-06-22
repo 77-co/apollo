@@ -51,7 +51,7 @@ export function transcribeStream(onTranscript, onFinalResult) {
             verbose: false,
             recordProgram: 'rec', // 'arecord' or 'rec'
             recorder: 'sox',
-            device: null, // Specify device if necessary
+            device: process.env.NODE_ENV === "production" ? 3 : null, // Specify device if necessary
         })
         .stream()
         .on('error', console.error);

@@ -8,6 +8,12 @@ import numpy as np
 import noisereduce as nr
 from vosk import Model, KaldiRecognizer
 from collections import deque
+import os
+
+from dotenv import load_dotenv
+load_dotenv()  # take environment variables
+
+is_prod = os.getenv("NODE_ENV") == "production"
 
 wake_words = ["apollo"]
 model = Model(lang="pl")
@@ -111,8 +117,9 @@ def callback(indata, frames, time, status):
 
 print("READY")
 
+print(sd.query_devices())
 with sd.RawInputStream(samplerate=16000, blocksize=2048, dtype='int16',
-                       channels=1, callback=callback):
+                       channels=1, callback=callback, device=3 if is_prod else None):
     while True:
         data = q.get()
         

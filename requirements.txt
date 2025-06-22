@@ -4,3 +4,4 @@ sounddevice
 vosk
 numpy
 noisereduce
+python-dotenv
