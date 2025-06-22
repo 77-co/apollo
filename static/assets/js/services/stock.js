@@ -203,7 +203,7 @@ class StockManager {
         
         try {
             // Load data with a small delay to ensure DOM is ready
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 1600));
             await this.updateStockApp();
         } catch (error) {
             console.error('Failed to load stock app data:', error);
@@ -286,7 +286,6 @@ class StockManager {
                             <div class="chart-header">
                                 <h3>Wykres cenowy</h3>
                                 <div class="chart-controls">
-                                    <button class="chart-period" data-period="1d">1D</button>
                                     <button class="chart-period active" data-period="7d">7D</button>
                                     <button class="chart-period" data-period="30d">30D</button>
                                     <button class="chart-period" data-period="90d">3M</button>
@@ -339,6 +338,7 @@ class StockManager {
         `);
         
         $('#apps').append(stockApp);
+        // Setup event listeners immediately after DOM insertion
         this.setupAppEventListeners();
     }
 
@@ -455,9 +455,6 @@ class StockManager {
             // Update market status
             await this.updateMarketStatus();
             
-            // Update chart
-            await this.updateChart();
-            
             // Show current symbol info
             $('#currentSymbolInfo').html(`
                 <div class="current-stock-header">
@@ -468,6 +465,12 @@ class StockManager {
             
             // Show all sections
             $('#quoteCard, #chartSection, #detailsSection, #marketStatusSection').show();
+            
+            // Update chart AFTER sections are visible
+            await this.updateChart();
+            
+            // Re-setup event listeners to ensure they work after content update
+            this.setupAppEventListeners();
             
             console.log('Stock app updated successfully');
             
@@ -585,7 +588,14 @@ class StockManager {
 
     async updateChart() {
         const canvas = $('#stockChart')[0];
-        if (!canvas) return;
+        if (!canvas) {
+            console.log('Canvas not found, retrying...');
+            // Try again after a short delay
+            setTimeout(() => this.updateChart(), 100);
+            return;
+        }
+        
+        console.log('Updating chart for period:', this.currentPeriod);
         
         try {
             const endDate = new Date();
@@ -593,9 +603,6 @@ class StockManager {
             
             // Set date range based on period
             switch (this.currentPeriod) {
-                case '1d':
-                    startDate.setDate(startDate.getDate() - 1);
-                    break;
                 case '7d':
                     startDate.setDate(startDate.getDate() - 7);
                     break;
@@ -610,7 +617,7 @@ class StockManager {
             const response = await window.backend.stock.getHistoricalData(this.currentSymbol, {
                 period1: startDate,
                 period2: endDate,
-                interval: this.currentPeriod === '1d' ? '5m' : '1d'
+                interval: '1d'
             });
             
             if (!response.success) throw new Error('Failed to get historical data');
@@ -620,6 +627,7 @@ class StockManager {
                 price: item.close
             }));
             
+            console.log('Chart data loaded:', data.length, 'points');
             this.drawChart(canvas, data);
             
         } catch (error) {
@@ -691,6 +699,8 @@ class StockManager {
                 ctx.fill();
             });
         }
+        
+        console.log('Chart drawn successfully');
     }
 
     drawFallbackChart(canvas) {
