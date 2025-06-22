@@ -22,6 +22,8 @@ import { deintegrate } from "./link/link.js";
 import Main from "electron/main";
 import { emulateInvoke } from "./assistant/helpers.js";
 import { setBrightness } from "./display-brightness/index.js";
+import StockService from './stock/index.js';
+
 
 let latestErrorData = {
     errors: [],
@@ -53,6 +55,8 @@ let AssistantService = null;
 let SpotifyService = null;
 let CalendarService = null;
 let SystemInfoService = null;
+let stockService = null;
+
 
 export function setup(mainWindow) {
     session.defaultSession.setPermissionRequestHandler(
@@ -65,6 +69,319 @@ export function setup(mainWindow) {
             }
         }
     );
+
+    function initializeStockService() {
+        if (!stockService) {
+            stockService = new StockService({
+                cacheDuration: 5 * 60 * 1000, // 5 minutes
+                quoteCacheDuration: 1 * 60 * 1000, // 1 minute for live quotes
+                historicalCacheDuration: 30 * 60 * 1000, // 30 minutes for historical
+            });
+
+            stockService.on('error', (error) => {
+                console.error('Stock service error:', error);
+            });
+
+            stockService.on('cacheHit', (data) => {
+                console.log('Stock cache hit:', data.key);
+            });
+        }
+        return stockService;
+    }
+
+    // STOCK
+
+    ipcMain.handle("stock-get-quote", async (event, symbol) => {
+        try {
+            const service = initializeStockService();
+            const result = await service.getQuote(symbol);
+            return {
+                success: true,
+                data: result,
+            };
+        } catch (error) {
+            console.error("Get stock quote error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-get-quotes", async (event, symbols) => {
+        try {
+            const service = initializeStockService();
+            const result = await service.getQuotes(symbols);
+            return {
+                success: true,
+                data: result,
+            };
+        } catch (error) {
+            console.error("Get stock quotes error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-get-historical", async (event, symbol, options = {}) => {
+        try {
+            const service = initializeStockService();
+            const result = await service.getHistoricalData(symbol, options);
+            return {
+                success: true,
+                data: result,
+            };
+        } catch (error) {
+            console.error("Get stock historical data error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-search", async (event, query, options = {}) => {
+        try {
+            const service = initializeStockService();
+            const result = await service.search(query, options);
+            return {
+                success: true,
+                data: result,
+            };
+        } catch (error) {
+            console.error("Stock search error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-get-market-summary", async () => {
+        try {
+            const service = initializeStockService();
+            const result = await service.getMarketSummary();
+            return {
+                success: true,
+                data: result,
+            };
+        } catch (error) {
+            console.error("Get market summary error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    // Watchlist handlers
+    ipcMain.handle("stock-add-to-watchlist", async (event, symbol) => {
+        try {
+            const service = initializeStockService();
+            service.addToWatchlist(symbol);
+            return {
+                success: true,
+                data: { watchlist: service.getWatchlist() },
+            };
+        } catch (error) {
+            console.error("Add to watchlist error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-remove-from-watchlist", async (event, symbol) => {
+        try {
+            const service = initializeStockService();
+            service.removeFromWatchlist(symbol);
+            return {
+                success: true,
+                data: { watchlist: service.getWatchlist() },
+            };
+        } catch (error) {
+            console.error("Remove from watchlist error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-get-watchlist", async () => {
+        try {
+            const service = initializeStockService();
+            const watchlist = service.getWatchlist();
+            return {
+                success: true,
+                data: { watchlist },
+            };
+        } catch (error) {
+            console.error("Get watchlist error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-get-watchlist-quotes", async () => {
+        try {
+            const service = initializeStockService();
+            const result = await service.getWatchlistQuotes();
+            return {
+                success: true,
+                data: result,
+            };
+        } catch (error) {
+            console.error("Get watchlist quotes error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    // Portfolio handlers
+    ipcMain.handle("stock-create-portfolio", async (event, name, description = '') => {
+        try {
+            const service = initializeStockService();
+            const portfolioId = service.createPortfolio(name, description);
+            return {
+                success: true,
+                data: { portfolioId },
+            };
+        } catch (error) {
+            console.error("Create portfolio error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-add-to-portfolio", async (event, portfolioId, symbol, shares, purchasePrice, purchaseDate) => {
+        try {
+            const service = initializeStockService();
+            service.addToPortfolio(portfolioId, symbol, shares, purchasePrice, purchaseDate);
+            return {
+                success: true,
+                data: { message: 'Holding added successfully' },
+            };
+        } catch (error) {
+            console.error("Add to portfolio error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-get-portfolio-value", async (event, portfolioId) => {
+        try {
+            const service = initializeStockService();
+            const result = await service.getPortfolioValue(portfolioId);
+            return {
+                success: true,
+                data: result,
+            };
+        } catch (error) {
+            console.error("Get portfolio value error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-get-portfolios", async () => {
+        try {
+            const service = initializeStockService();
+            const portfolios = service.getPortfolios();
+            return {
+                success: true,
+                data: { portfolios },
+            };
+        } catch (error) {
+            console.error("Get portfolios error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    // Utility handlers
+    ipcMain.handle("stock-is-market-open", async (event, exchange = 'NYSE') => {
+        try {
+            const service = initializeStockService();
+            const result = await service.isMarketOpen(exchange);
+            return {
+                success: true,
+                data: { isOpen: result },
+            };
+        } catch (error) {
+            console.error("Check market status error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-clear-cache", async () => {
+        try {
+            const service = initializeStockService();
+            service.clearCache();
+            return {
+                success: true,
+                data: { message: 'Cache cleared successfully' },
+            };
+        } catch (error) {
+            console.error("Clear cache error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-get-cache-stats", async () => {
+        try {
+            const service = initializeStockService();
+            const stats = service.getCacheStats();
+            return {
+                success: true,
+                data: stats,
+            };
+        } catch (error) {
+            console.error("Get cache stats error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("stock-bulk-quotes", async (event, symbols, batchSize = 10) => {
+        try {
+            const service = initializeStockService();
+            const result = await service.getBulkQuotes(symbols, batchSize);
+            return {
+                success: true,
+                data: result,
+            };
+        } catch (error) {
+            console.error("Bulk quotes error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
 
     //DEBUGGER
 

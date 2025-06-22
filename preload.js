@@ -73,6 +73,65 @@ const AssistantService = {
     },
 };
 
+// Add this to your preload services
+
+const StockService = {
+    // Quote methods
+    getQuote: (symbol) =>
+        ipcRenderer.invoke('stock-get-quote', symbol),
+
+    getQuotes: (symbols) =>
+        ipcRenderer.invoke('stock-get-quotes', symbols),
+
+    getHistoricalData: (symbol, options = {}) =>
+        ipcRenderer.invoke('stock-get-historical', symbol, options),
+
+    search: (query, options = {}) =>
+        ipcRenderer.invoke('stock-search', query, options),
+
+    getMarketSummary: () =>
+        ipcRenderer.invoke('stock-get-market-summary'),
+
+    // Watchlist methods
+    addToWatchlist: (symbol) =>
+        ipcRenderer.invoke('stock-add-to-watchlist', symbol),
+
+    removeFromWatchlist: (symbol) =>
+        ipcRenderer.invoke('stock-remove-from-watchlist', symbol),
+
+    getWatchlist: () =>
+        ipcRenderer.invoke('stock-get-watchlist'),
+
+    getWatchlistQuotes: () =>
+        ipcRenderer.invoke('stock-get-watchlist-quotes'),
+
+    // Portfolio methods
+    createPortfolio: (name, description = '') =>
+        ipcRenderer.invoke('stock-create-portfolio', name, description),
+
+    addToPortfolio: (portfolioId, symbol, shares, purchasePrice, purchaseDate) =>
+        ipcRenderer.invoke('stock-add-to-portfolio', portfolioId, symbol, shares, purchasePrice, purchaseDate),
+
+    getPortfolioValue: (portfolioId) =>
+        ipcRenderer.invoke('stock-get-portfolio-value', portfolioId),
+
+    getPortfolios: () =>
+        ipcRenderer.invoke('stock-get-portfolios'),
+
+    // Utility methods
+    isMarketOpen: (exchange = 'NYSE') =>
+        ipcRenderer.invoke('stock-is-market-open', exchange),
+
+    clearCache: () =>
+        ipcRenderer.invoke('stock-clear-cache'),
+
+    getCacheStats: () =>
+        ipcRenderer.invoke('stock-get-cache-stats'),
+
+    getBulkQuotes: (symbols, batchSize = 10) =>
+        ipcRenderer.invoke('stock-bulk-quotes', symbols, batchSize),
+};
+
 const WeatherService = {
     getCurrentWeather: (params) =>
         ipcRenderer.invoke('get-weather', params),
@@ -337,6 +396,7 @@ const integrations = {
 };
 
 contextBridge.exposeInMainWorld('backend', {
+    stock: StockService,
     assistant: AssistantService,
     weather: WeatherService,
     airquality: AirQualityService,
