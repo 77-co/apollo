@@ -14,16 +14,40 @@ class Integration {
     }
 
     // In this function we need to replace 'this' with an argument, because when using it as a handler, this could be overwritten by the element it's linked to.
-    _buttonHandler(classObject) {
+    async _buttonHandler(classObject) {
         if (integrations[classObject.integrationName]?.active) {
             // handle unlinking integration
             classObject.unlinkIntegration();
             return;
         }
 
-        activeIntegrationLogin = classObject.integrationName;
-        $('#linkLoginQRCode').attr('src', integrations[classObject.integrationName]?.qrcode);
-        $('#linkLoginAlert').addClass('active');
+        // For Spotify, reinitialize before showing QR code to get fresh auth session
+        if (classObject.integrationName === 'spotify' && window.spotifyWidget) {
+            await window.spotifyWidget.reinitialize();
+            
+            // Wait a moment for the new QR code to be generated
+            setTimeout(() => {
+                if (integrations[classObject.integrationName]?.qrcode) {
+                    activeIntegrationLogin = classObject.integrationName;
+                    $('#linkLoginQRCode').attr('src', integrations[classObject.integrationName].qrcode);
+                    $('#linkLoginAlert').addClass('active');
+                } else {
+                    // If no QR code yet, try again after a short delay
+                    setTimeout(() => {
+                        if (integrations[classObject.integrationName]?.qrcode) {
+                            activeIntegrationLogin = classObject.integrationName;
+                            $('#linkLoginQRCode').attr('src', integrations[classObject.integrationName].qrcode);
+                            $('#linkLoginAlert').addClass('active');
+                        }
+                    }, 1000);
+                }
+            }, 500);
+        } else {
+            // For other integrations, use existing QR code
+            activeIntegrationLogin = classObject.integrationName;
+            $('#linkLoginQRCode').attr('src', integrations[classObject.integrationName]?.qrcode);
+            $('#linkLoginAlert').addClass('active');
+        }
     }
 
     unlinkIntegration() {
