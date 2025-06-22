@@ -96,7 +96,8 @@ def process_final_result(result):
         if is_wake_word_valid(word_info):
             recent_detections.append(current_time)
             wake_detected = True
-            print(f"Valid wake word detected: {word_info['word']} (conf: {word_info['conf']:.3f})")
+            # print(f"Valid wake word detected: {word_info['word']} (conf: {word_info['conf']:.3f})")
+            print("WAKE")
             break
     
     # Check for confirmation
@@ -128,7 +129,6 @@ with sd.RawInputStream(samplerate=16000, blocksize=2048, dtype='int16',
             
             # Only process final results for wake word detection
             if process_final_result(result):
-                print("WAKE")
                 sys.stdout.flush()
             
             # Clear processed texts on final result
