@@ -171,7 +171,6 @@ export class StockService extends EventEmitter {
         };
     }
 
-    // Historical data
     async getHistoricalData(symbol, options = {}) {
         const defaultOptions = {
             period1: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
@@ -186,20 +185,26 @@ export class StockService extends EventEmitter {
         if (cached) return cached;
 
         try {
-            const historical = await this._retryRequest(async () => {
-                return await yahooFinance.historical(symbol, finalOptions);
+            // Use chart() instead of historical() as per yahoo-finance2 deprecation notice
+            const chartData = await this._retryRequest(async () => {
+                return await yahooFinance.chart(symbol, {
+                    period1: finalOptions.period1,
+                    period2: finalOptions.period2,
+                    interval: finalOptions.interval
+                });
             });
 
+            // Transform chart data to match historical format
             const processedData = {
                 symbol,
-                data: historical.map(item => ({
-                    date: item.date,
-                    open: item.open,
-                    high: item.high,
-                    low: item.low,
-                    close: item.close,
-                    adjClose: item.adjClose,
-                    volume: item.volume
+                data: chartData.quotes.map(quote => ({
+                    date: quote.date,
+                    open: quote.open,
+                    high: quote.high,
+                    low: quote.low,
+                    close: quote.close,
+                    adjClose: quote.adjclose,
+                    volume: quote.volume
                 })),
                 period: finalOptions,
                 lastUpdated: new Date()

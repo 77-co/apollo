@@ -12,6 +12,7 @@ class RSSWidget {
         this.currentIndex = 0;
         this.newsItems = [];
         this.allCategoryNews = {};
+        this.filteredNews = [];
         this.updateInterval = null;
         this.progressInterval = null;
         this.backgroundLoadInterval = null;
@@ -19,13 +20,15 @@ class RSSWidget {
         this.currentSource = 'world';
         this.isLoading = false;
         this.isPaused = false;
+        this.searchQuery = '';
+        this.currentFilter = 'all';
         
         this.articleCount = 5;
         this.progressSpeed = 6000;
         this.sources = ['tech_science', 'world', 'business', 'sport'];
         this.currentSourceIndex = 0;
         
-        this.currentTime = new Date('2025-06-06T07:22:54Z');
+        this.currentTime = new Date('2025-06-22T17:03:57Z');
         
         this.initialize();
     }
@@ -150,30 +153,208 @@ class RSSWidget {
     }
 
     setupEventListeners() {
-        document.querySelectorAll('#newsApp .source-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                const source = e.currentTarget.dataset.source;
-                this.switchSourceFromApp(source);
+        // Search functionality
+        const searchInput = document.querySelector('#newsSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.searchQuery = e.target.value.toLowerCase();
+                this.debounce(() => this.filterAndDisplayNews(), 300)();
             });
+        }
+
+        // Clear search
+        const clearSearchBtn = document.querySelector('#clearNewsSearch');
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', () => {
+                this.clearSearch();
+            });
+        }
+
+        // Category filters
+        document.querySelectorAll('.news-filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.currentFilter = e.currentTarget.dataset.filter;
+                document.querySelectorAll('.news-filter-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                this.filterAndDisplayNews();
+            });
+        });
+
+        // Refresh button
+        const refreshBtn = document.querySelector('#refreshNewsBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.refreshAllNews();
+            });
+        }
+    }
+
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    async refreshAllNews() {
+        const refreshBtn = document.querySelector('#refreshNewsBtn');
+        if (refreshBtn) {
+            refreshBtn.classList.add('loading');
+        }
+
+        try {
+            await this.loadAllCategories();
+            this.filterAndDisplayNews();
+            
+            // Keep spinning for 1.5 seconds to show success
+            setTimeout(() => {
+                if (refreshBtn) {
+                    refreshBtn.classList.remove('loading');
+                }
+            }, 1500);
+            
+        } catch (error) {
+            console.error('Failed to refresh news:', error);
+            
+            // Stop spinning immediately on error and add error state
+            if (refreshBtn) {
+                refreshBtn.classList.remove('loading');
+                refreshBtn.classList.add('error');
+                
+                // Remove error state after 2 seconds
+                setTimeout(() => {
+                    refreshBtn.classList.remove('error');
+                }, 2000);
+            }
+        }
+    }
+
+    filterAndDisplayNews() {
+        let allNews = [];
+        
+        // Combine all news from all categories
+        Object.keys(this.allCategoryNews).forEach(source => {
+            const articles = this.allCategoryNews[source] || [];
+            allNews = allNews.concat(articles.map(article => ({
+                ...article,
+                category: source
+            })));
+        });
+
+        // Apply category filter
+        if (this.currentFilter !== 'all') {
+            allNews = allNews.filter(article => article.category === this.currentFilter);
+        }
+
+        // Apply search filter
+        if (this.searchQuery) {
+            allNews = allNews.filter(article => 
+                article.title.toLowerCase().includes(this.searchQuery) ||
+                (article.summary && article.summary.toLowerCase().includes(this.searchQuery)) ||
+                (article.author && article.author.toLowerCase().includes(this.searchQuery))
+            );
+            
+            // Show/hide clear search button
+            const clearBtn = document.querySelector('#clearNewsSearch');
+            if (clearBtn) {
+                clearBtn.style.display = this.searchQuery ? 'flex' : 'none';
+            }
+        }
+
+        // Sort by timestamp (newest first)
+        allNews.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        this.filteredNews = allNews;
+        this.updateNewsAppWithFiltered();
+    }
+
+    updateNewsApp() {
+        this.filterAndDisplayNews();
+    }
+
+    updateNewsAppWithFiltered() {
+        const newsFeed = document.querySelector('.news-feed');
+        const newsCount = document.querySelector('.news-count');
+        
+        if (!newsFeed) return;
+        
+        // Update count
+        if (newsCount) {
+            newsCount.textContent = `${this.filteredNews.length} artykułów`;
+        }
+        
+        newsFeed.innerHTML = '';
+        
+        if (this.filteredNews.length === 0) {
+            const emptyState = this.searchQuery ? 
+                `<div class="no-articles">
+                    <span class="material-symbols-outlined">search_off</span>
+                    <h3>Brak wyników</h3>
+                    <p>Nie znaleziono artykułów dla "${this.searchQuery}"</p>
+                </div>` :
+                `<div class="no-articles">
+                    <span class="material-symbols-outlined">article</span>
+                    <h3>Brak artykułów</h3>
+                    <p>Brak artykułów w tej kategorii</p>
+                </div>`;
+            
+            newsFeed.innerHTML = emptyState;
+            return;
+        }
+        
+        this.filteredNews.forEach((news, index) => {
+            const articleElement = document.createElement('div');
+            articleElement.className = 'news-article';
+            
+            const categoryName = this.getCategoryDisplayName(news.category);
+            const isRecent = this.isRecentArticle(news.timestamp);
+            
+            articleElement.innerHTML = `
+                <div class="article-card">
+                    ${isRecent ? '<div class="new-badge">NOWE</div>' : ''}
+                    <div class="article-header">
+                        <span class="article-category">${categoryName}</span>
+                        <span class="article-time">${this.formatTimestamp(news.timestamp)}</span>
+                    </div>
+                    <h2 class="article-title">${news.title}</h2>
+                    <div class="article-source">${news.source}</div>
+                </div>
+            `;
+            
+            articleElement.addEventListener('click', () => {
+                this.openFullArticle(news);
+            });
+            
+            newsFeed.appendChild(articleElement);
         });
     }
 
-    async switchSourceFromApp(source) {
-        document.querySelectorAll('#newsApp .source-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        document.querySelector(`#newsApp .source-item[data-source="${source}"]`)?.classList.add('active');
-        
-        if (this.allCategoryNews[source] && this.allCategoryNews[source].length >= 5) {
-            this.updateNewsAppWithSource(source);
-        } else {
-            try {
-                await this.loadNewsForSource(source);
-                this.updateNewsApp();
-            } catch (error) {
-                console.error(`[RSS Widget] Failed to switch to source ${source}:`, error);
-            }
-        }
+    getCategoryDisplayName(category) {
+        const categoryNames = {
+            'tech_science': 'Tech',
+            'world': 'Świat',
+            'business': 'Biznes',
+            'sport': 'Sport'
+        };
+        return categoryNames[category] || category;
+    }
+
+    isRecentArticle(timestamp) {
+        const articleTime = new Date(timestamp);
+        const diffHours = (this.currentTime - articleTime) / (1000 * 60 * 60);
+        return diffHours < 2; // Articles newer than 2 hours are "new"
+    }
+
+    clearSearch() {
+        this.searchQuery = '';
+        document.querySelector('#newsSearchInput').value = '';
+        document.querySelector('#clearNewsSearch').style.display = 'none';
+        this.filterAndDisplayNews();
     }
 
     displayCurrentNews() {
@@ -192,9 +373,7 @@ class RSSWidget {
             easing: "easeInCubic",
             complete: () => {
                 this.headlineElement.textContent = currentNews.title;
-                this.timestampElement.textContent = this.formatTimestamp(
-                    currentNews.timestamp
-                );
+                this.timestampElement.textContent = this.formatTimestamp(currentNews.timestamp);
                 this.sourceElement.textContent = currentNews.source;
                 this.currentIndexElement.textContent = this.currentIndex + 1;
 
@@ -206,48 +385,6 @@ class RSSWidget {
                     easing: "easeOutCubic",
                 });
             },
-        });
-    }
-
-    updateNewsApp() {
-        const activeSourceElement = document.querySelector('#newsApp .source-item.active');
-        const activeSource = activeSourceElement ? activeSourceElement.dataset.source : 'tech_science';
-        
-        this.updateNewsAppWithSource(activeSource);
-    }
-
-    updateNewsAppWithSource(source) {
-        const newsFeed = document.querySelector('#newsApp .news-feed');
-        if (!newsFeed) return;
-        
-        const articles = this.allCategoryNews[source] || [];
-        
-        newsFeed.innerHTML = '';
-        
-        if (articles.length === 0) {
-            newsFeed.innerHTML = '<div class="no-articles">Brak artykułów do wyświetlenia</div>';
-            return;
-        }
-        
-        articles.forEach((news, index) => {
-            const articleElement = document.createElement('div');
-            articleElement.className = 'news-article';
-            articleElement.innerHTML = `
-                <div class="article-header">
-                    <h2 class="article-title">${news.title}</h2>
-                    <span class="article-source">${news.source}</span>
-                </div>
-                <div class="article-footer">
-                    <span class="article-time">${this.formatTimestamp(news.timestamp)}</span>
-                    <span class="article-author">${news.author || 'Autor nieznany'}</span>
-                </div>
-            `;
-            
-            articleElement.addEventListener('click', () => {
-                this.openFullArticle(news);
-            });
-            
-            newsFeed.appendChild(articleElement);
         });
     }
 
@@ -421,11 +558,11 @@ class RSSWidget {
         
         if (hours > 24) {
             const days = Math.floor(hours / 24);
-            return `${days} ${days === 1 ? 'dzień' : 'dni'} temu`;
+            return `${days}d`;
         } else if (hours > 0) {
-            return `${hours}h temu`;
+            return `${hours}h`;
         } else if (minutes > 0) {
-            return `${minutes}min temu`;
+            return `${minutes}m`;
         } else {
             return 'Teraz';
         }

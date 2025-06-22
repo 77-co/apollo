@@ -175,7 +175,7 @@
                         <div class="setting-row">
                             <div class="setting-text">
                                 <h3 class="setting-title">Twoje miasto</h3>
-                                <p class="setting-description">Apollo będzie wiedzieć z jakiej lokalizacji domyślnie pobierać pogodę. Lokalizacja może zostać również użyta przez Apollo do personalizacji innych usług.</p>
+                                <p class="setting-description">Apollo będzie mieć dostęp do lokalizacji. Lokalizacja może zostać również użyta do innych usług.</p>
                             </div>
                             <div class="input-wrapper">
                                 <input type="text" onblur="(async () => {await fetchCity();updateWeather()})();" onchange="setting(this)" class="setting input"
@@ -417,29 +417,38 @@
 
             <div class="app" id="newsApp">
                 <span class="appTitle">Aktualności</span>
+                
                 <div class="news-content">
-                    <div class="news-sources">
-                        <div class="source-list">
-                            <div class="source-item active" data-source="tech_science">
-                                <span class="material-symbols-outlined">computer</span>
-                                <span>Technologie i nauka</span>
+                    <!-- Compact Header -->
+                    <div class="news-header">
+                        <div class="search-row">
+                            <div class="search-input-container">
+                                <span class="material-symbols-outlined">search</span>
+                                <input type="text" id="newsSearchInput" placeholder="Szukaj wiadomości...">
+                                <button id="clearNewsSearch" style="display: none;">
+                                    <span class="material-symbols-outlined">close</span>
+                                </button>
                             </div>
-                            <div class="source-item" data-source="world">
-                                <span class="material-symbols-outlined">public</span>
-                                <span>Świat</span>
-                            </div>
-                            <div class="source-item" data-source="business">
-                                <span class="material-symbols-outlined">business</span>
-                                <span>Biznes</span>
-                            </div>
-                            <div class="source-item" data-source="sport">
-                                <span class="material-symbols-outlined">sports_soccer</span>
-                                <span>Sport</span>
-                            </div>
+                            <button id="refreshNewsBtn">
+                                <span class="material-symbols-outlined">refresh</span>
+                            </button>
+                        </div>
+                        
+                        <div class="filter-row">
+                            <button class="news-filter-btn active" data-filter="all">Wszystkie</button>
+                            <button class="news-filter-btn" data-filter="tech_science">Tech</button>
+                            <button class="news-filter-btn" data-filter="world">Świat</button>
+                            <button class="news-filter-btn" data-filter="business">Biznes</button>
+                            <button class="news-filter-btn" data-filter="sport">Sport</button>
                         </div>
                     </div>
 
+                    <!-- Compact Status -->
+                    <div class="news-count">Ładowanie...</div>
+
+                    <!-- News Feed -->
                     <div class="news-feed">
+                        <!-- Articles will be populated here -->
                     </div>
                 </div>
             </div>
