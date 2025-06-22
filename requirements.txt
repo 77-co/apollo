@@ -2,3 +2,5 @@ requests
 beautifulsoup4
 sounddevice
 vosk
+numpy
+noisereduce

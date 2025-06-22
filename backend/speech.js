@@ -19,7 +19,17 @@ const noPlayer = { kill: () => null };
 let currentPlayer = null;
 
 export function transcribeStream(onTranscript, onFinalResult) {
-    currentPlayer = noPlayer; // Interrupt the currently running TTS player.
+    // Kill any currently playing audio
+    if (currentPlayer) {
+        currentPlayer.kill();
+        currentPlayer = null;
+    }
+
+    // Abort any ongoing TTS stream
+    if (currentStreamAbortController) {
+        currentStreamAbortController.abort();
+        currentStreamAbortController = null;
+    }
 
     // Configure request for streaming recognition
     const request = {
@@ -92,12 +102,23 @@ export function transcribeStream(onTranscript, onFinalResult) {
     }, 300);
 }
 
-export async function synthesise(text, voiceName = 'ash') {
+let currentStreamAbortController = null;
+
+export async function synthesise(text, voiceName = "ash") {
     // Kill any currently playing audio
     if (currentPlayer) {
         currentPlayer.kill();
         currentPlayer = null;
     }
+
+    // Abort any ongoing TTS stream
+    if (currentStreamAbortController) {
+        currentStreamAbortController.abort(); // this prevents further chunks from being read
+        currentStreamAbortController = null;
+    }
+
+    currentStreamAbortController = new AbortController();
+    const { signal } = currentStreamAbortController;
 
     const response = await openai.audio.speech.create({
         model: "gpt-4o-mini-tts",
@@ -105,45 +126,53 @@ export async function synthesise(text, voiceName = 'ash') {
         voice: voiceName,
         input: text,
         response_format: "opus",
+        signal,
     });
 
-    const ffplay = spawn('ffplay', [
-        '-i', 'pipe:0',
-        '-nodisp',
-        '-autoexit'
-    ], { stdio: ['pipe', 'ignore', 'ignore'] });
+    const ffplay = spawn("ffplay", ["-i", "pipe:0", "-nodisp", "-autoexit"], {
+        stdio: ["pipe", "ignore", "ignore"],
+    });
 
-    // Store the new player as the current instance
+    ffplay.stdin.on("error", (err) => {
+        if (err.code === "EPIPE") {
+            console.warn(
+                "[synth] tried to write after ffplay was killed — ignoring."
+            );
+        } else {
+            console.error("[synth] ffplay.stdin error:", err);
+        }
+    });
+
     currentPlayer = ffplay;
 
-    for await (const chunk of response.body) {
-        // Check if this is still the current player before writing
-        if (ffplay === currentPlayer) {
-            ffplay.stdin.write(chunk);
-        } else {
-            // If it's not the current player anymore, clean up and exit
-            ffplay.kill();
-            return;
+    try {
+        for await (const chunk of response.body) {
+            if (ffplay !== currentPlayer || signal.aborted) {
+                // Stop early if interrupted
+                break;
+            }
+            if (!ffplay.stdin.destroyed) {
+                ffplay.stdin.write(chunk);
+            }
         }
-    }
-
-    if (ffplay === currentPlayer) {
-        ffplay.stdin.end();
-    }
-
-    setInterval(() => {
-        if (ffplay !== currentPlayer) {
-            ffplay.kill();
-            return;
+    } catch (err) {
+        if (err.name !== "AbortError") {
+            console.error("[synth] stream error:", err);
         }
-    }, 300);
+    } finally {
+        if (!ffplay.stdin.destroyed) {
+            ffplay.stdin.end();
+        }
+        currentStreamAbortController = null;
+    }
 
     return new Promise((resolve, reject) => {
-        ffplay.on('close', (code) => {
-            // Only resolve/reject if this is still the current player
+        ffplay.on("close", (code) => {
             if (ffplay === currentPlayer) {
                 currentPlayer = null;
-                code === 0 ? resolve() : reject(new Error(`ffplay exited with code ${code}`));
+                code === 0
+                    ? resolve()
+                    : reject(new Error(`ffplay exited with code ${code}`));
             }
         });
     });
