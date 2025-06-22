@@ -634,7 +634,8 @@
 
 #mobidziennik .widget-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: 0.6rem;
 }
 
@@ -669,6 +670,14 @@
     color: var(--theme-fg-1);
 }
 
+#mobidziennik .event-date {
+    font-size: 0.9rem;
+    font-weight: 300;
+    opacity: 0.8;
+    text-align: right;
+    white-space: nowrap;
+}
+
 #mobidziennik .current-event {
     flex: 1;
     display: flex;
@@ -677,8 +686,8 @@
 }
 
 #mobidziennik .current-event .event-title {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 0.96rem;
+    font-weight: 500;
     line-height: 1.2;
     margin: 0;
     color: var(--theme-fg-1);
@@ -689,28 +698,11 @@
 }
 
 #mobidziennik .event-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-#mobidziennik .event-date {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--theme-fg-1);
-    opacity: 0.9;
+    display: none; /* Hide the meta container since we moved date to header */
 }
 
 #mobidziennik .event-type {
-    font-size: 0.7rem;
-    font-weight: 500;
-    background-color: rgba(255, 255, 255, 0.25);
-    color: var(--theme-fg-1);
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.6rem;
-    text-transform: capitalize;
-    white-space: nowrap;
+    display: none; /* Hide the event type */
 }
 
 #mobidziennik .no-events {

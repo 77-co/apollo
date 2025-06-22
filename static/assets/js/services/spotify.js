@@ -2,6 +2,7 @@ class SpotifyWidget {
     constructor() {
         this.integration = new Integration('spotify', () => {
             // Handle logging out (unlinking account)
+            this.destroy(); // Call destroy first to clean up properly
             window.backend.spotify.destroy();
             window.backend.integrations.deintegrate("spotify");
         });
@@ -28,6 +29,7 @@ class SpotifyWidget {
         this.animations = {};
         this.currentImageUrl = null;
         this.isDragging = false;
+        this.isDestroyed = false; // Add flag to prevent operations after destroy
 
         this.device = null;
         
@@ -79,6 +81,7 @@ class SpotifyWidget {
     setupVolumeControl() {
         // Volume bar click and drag
         const handleVolumeChange = (e) => {
+            if (this.isDestroyed) return; // Prevent operations after destroy
             const rect = this.volumeBar.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
             const percentage = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
@@ -90,13 +93,14 @@ class SpotifyWidget {
 
         // Drag to set volume
         this.volumeBar.addEventListener('mousedown', (e) => {
+            if (this.isDestroyed) return;
             this.isDragging = true;
             handleVolumeChange(e);
             e.preventDefault();
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (this.isDragging) {
+            if (this.isDragging && !this.isDestroyed) {
                 handleVolumeChange(e);
             }
         });
@@ -107,6 +111,7 @@ class SpotifyWidget {
 
         // Volume icon click to mute/unmute
         this.volumeIcon.addEventListener('click', () => {
+            if (this.isDestroyed) return;
             if (this.currentVolume > 0) {
                 this.previousVolume = this.currentVolume;
                 this.setVolume(0);
@@ -120,6 +125,7 @@ class SpotifyWidget {
     }
 
     async setVolume(volume) {
+        if (this.isDestroyed) return;
         try {
             const response = await window.backend.spotify.setVolume(volume);
             if (response.success) {
@@ -132,6 +138,7 @@ class SpotifyWidget {
     }
 
     updateVolumeDisplay(volume) {
+        if (this.isDestroyed) return;
         this.currentVolume = volume;
         this.volumeFill.style.width = `${volume}%`;
         this.volumePercentage.textContent = `${volume}%`;
@@ -147,6 +154,7 @@ class SpotifyWidget {
     }
 
     async initializeSpotify() {
+        if (this.isDestroyed) return;
         try {
             const result = await window.backend.spotify.initialize();
             if (!result.success) {
@@ -158,7 +166,9 @@ class SpotifyWidget {
     }
 
     setupEventListeners() {
-        window.addEventListener('spotify-event', async (e) => {
+        this.spotifyEventHandler = async (e) => {
+            if (this.isDestroyed) return; // Ignore events after destroy
+            
             const { event, data } = e.detail;
             
             switch (event) {
@@ -192,23 +202,35 @@ class SpotifyWidget {
                     console.error('Spotify error:', data);
                     break;
             }
-        });
+        };
+
+        window.addEventListener('spotify-event', this.spotifyEventHandler);
 
         const controlButtons = [this.playButton, this.prevButton, this.nextButton];
         controlButtons.forEach(button => {
             button.addEventListener('click', this.debounce((e) => {
+                if (this.isDestroyed) return;
                 this.animations.buttonPress.targets = e.currentTarget;
                 this.animations.buttonPress.play();
             }, 200));
         });
 
-        this.playButton.addEventListener('click', this.debounce(() => this.togglePlayback(), 200));
-        this.prevButton.addEventListener('click', this.debounce(() => this.previousTrack(), 200));
-        this.nextButton.addEventListener('click', this.debounce(() => this.nextTrack(), 200));
+        this.playButton.addEventListener('click', this.debounce(() => {
+            if (!this.isDestroyed) this.togglePlayback();
+        }, 200));
+        this.prevButton.addEventListener('click', this.debounce(() => {
+            if (!this.isDestroyed) this.previousTrack();
+        }, 200));
+        this.nextButton.addEventListener('click', this.debounce(() => {
+            if (!this.isDestroyed) this.nextTrack();
+        }, 200));
     }
 
     async checkAndPollForDevices() {
+        if (this.isDestroyed) return;
+        
         const getDevice = async () => {
+            if (this.isDestroyed) return null;
             try {
                 const response = await window.backend.spotify.getDevices();
                 // console.log('Devices:', response);
@@ -226,6 +248,11 @@ class SpotifyWidget {
         };
 
         this.devicePollInterval = setInterval(async () => {
+            if (this.isDestroyed) {
+                clearInterval(this.devicePollInterval);
+                return;
+            }
+            
             const device = await getDevice();
             this.device = device;
             if (device) {
@@ -249,15 +276,23 @@ class SpotifyWidget {
     }
 
     startTrackUpdates() {
+        if (this.isDestroyed) return;
         console.log('Starting track updates');
         if (this.updateInterval) {
             clearInterval(this.updateInterval);
         }
         this.updateCurrentTrack();
-        this.updateInterval = setInterval(() => this.updateCurrentTrack(), 1000);
+        this.updateInterval = setInterval(() => {
+            if (this.isDestroyed) {
+                clearInterval(this.updateInterval);
+                return;
+            }
+            this.updateCurrentTrack();
+        }, 1000);
     }
 
     async togglePlayback() {
+        if (this.isDestroyed) return;
         try {
             this.isPlaying = !this.isPlaying;
             this.updatePlayButton();
@@ -278,11 +313,13 @@ class SpotifyWidget {
     }
 
     updatePlayButton() {
+        if (this.isDestroyed) return;
         const iconSpan = this.playButton.querySelector('span');
         iconSpan.textContent = this.isPlaying ? 'pause' : 'play_arrow';
     }
 
     async previousTrack() {
+        if (this.isDestroyed) return;
         try {
             this.nextTrackFadeout();
             const response = await window.backend.spotify.previous();
@@ -292,6 +329,7 @@ class SpotifyWidget {
     }
 
     async nextTrack() {
+        if (this.isDestroyed) return;
         try {
             this.nextTrackFadeout();
             const response = await window.backend.spotify.next();
@@ -301,12 +339,13 @@ class SpotifyWidget {
     }
 
     nextTrackFadeout() {
+        if (this.isDestroyed) return;
         $('#spotify .meta').addClass('paused');
         anime(this.animations.oldSongOut);
     }
 
     async updateCurrentTrack() {
-        if (!this.device) return;
+        if (!this.device || this.isDestroyed) return;
         try {
             const [trackResponse, stateResponse] = await Promise.all([
                 window.backend.spotify.getCurrentTrack(),
@@ -363,6 +402,7 @@ class SpotifyWidget {
     }
 
     async updateTrackContent(newTitle, newArtist, newImageUrl) {
+        if (this.isDestroyed) return;
         this.titleSpan.textContent = newTitle;
         this.authorSpan.textContent = newArtist;
 
@@ -370,8 +410,10 @@ class SpotifyWidget {
             await new Promise((resolve, reject) => {
                 const img = new Image();
                 img.onload = () => {
-                    this.albumArt.src = newImageUrl;
-                    this.currentImageUrl = newImageUrl;
+                    if (!this.isDestroyed) {
+                        this.albumArt.src = newImageUrl;
+                        this.currentImageUrl = newImageUrl;
+                    }
                     resolve();
                 };
                 img.onerror = reject;
@@ -379,30 +421,93 @@ class SpotifyWidget {
             });
         }
 
-        anime({
-            complete: () => {
-                updateScrollWidth();
-                $('#spotify .meta').removeClass('paused');
-            },
-            ...this.animations.newSongIn
-        });
+        if (!this.isDestroyed) {
+            anime({
+                complete: () => {
+                    if (!this.isDestroyed) {
+                        updateScrollWidth();
+                        $('#spotify .meta').removeClass('paused');
+                    }
+                },
+                ...this.animations.newSongIn
+            });
+        }
     }
 
     destroy() {
+        // Set destroy flag to prevent further operations
+        this.isDestroyed = true;
+        
+        // Clear intervals immediately
         if (this.updateInterval) {
             clearInterval(this.updateInterval);
+            this.updateInterval = null;
         }
         if (this.devicePollInterval) {
             clearInterval(this.devicePollInterval);
+            this.devicePollInterval = null;
         }
         
-        Object.values(this.animations).forEach(animation => {
-            if (animation.pause) animation.pause();
-        });
-        this.animations = {};
+        // Remove event listener
+        if (this.spotifyEventHandler) {
+            window.removeEventListener('spotify-event', this.spotifyEventHandler);
+        }
         
-        window.backend.spotify.destroy()
-            .catch(error => console.error('Failed to destroy Spotify client:', error));
+        // Clear old QR code and integration data to force new auth session
+        if (integrations['spotify']) {
+            delete integrations['spotify'].qrcode;
+            integrations['spotify'] = {};
+        }
+        
+        // Reset UI state - show login alert, hide device alert
+        $('.spotifyLoginAlert').addClass('active');
+        $('.spotifyDeviceAlert').removeClass('active');
+        
+        // Reset widget state
+        this.device = null;
+        this.currentTrackId = null;
+        this.currentImageUrl = null;
+        this.isPlaying = false;
+        this.isDragging = false;
+        
+        // Reset UI elements to initial state
+        this.titleSpan.textContent = '';
+        this.authorSpan.textContent = '';
+        this.albumArt.src = 'https://placehold.co/512x512';
+        this.albumArt.style.opacity = '0';
+        this.titleSpan.style.opacity = '0';
+        this.authorSpan.style.opacity = '0';
+        
+        // Reset controls
+        this.updatePlayButton();
+        this.updateVolumeDisplay(50);
+        this.currentVolume = 50;
+        
+        // Remove paused class and reset meta
+        $('#spotify .meta').removeClass('paused');
+        
+        // Stop animations
+        Object.values(this.animations).forEach(animation => {
+            if (animation && typeof animation.pause === 'function') {
+                animation.pause();
+            }
+        });
+        
+        // Don't call window.backend.spotify.destroy() here since it's called by the integration
+    }
+
+    // Method to reinitialize when user wants to reconnect
+    async reinitialize() {
+        if (this.isDestroyed) {
+            // Reset the destroyed state
+            this.isDestroyed = false;
+            
+            // Re-setup event listeners
+            this.setupEventListeners();
+            
+            // Initialize Spotify with fresh auth session
+            await this.initializeSpotify();
+        }
     }
 }
 
