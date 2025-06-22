@@ -338,7 +338,6 @@ function updateWeeklyForecast(forecast) {
                         <span class="max-temp">${Math.round(day.max)}°</span>
                         <span class="min-temp">${Math.round(day.min)}°</span>
                     </div>
-                    <span class="condition">${capitaliseFirstLetter(translatedDescription)}</span>
                 </div>
             `);
             
