@@ -130,4 +130,4 @@ with sd.RawInputStream(samplerate=16000, blocksize=2048, dtype='int16',
             partial = json.loads(rec.PartialResult())
             text = partial.get("partial", "")
             # Optionally uncomment for debugging:
-            print(f"Partial: {text}")
+            # print(f"Partial: {text}")
