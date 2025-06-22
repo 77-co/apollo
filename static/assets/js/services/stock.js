@@ -389,7 +389,7 @@ class StockManager {
             </div>
         `);
         
-        // Hide main sections
+        // Hide main sections including chart
         $('#quoteCard, #chartSection, #detailsSection, #marketStatusSection').hide();
     }
 
@@ -403,7 +403,7 @@ class StockManager {
             </div>
         `);
         
-        // Hide main sections
+        // Hide main sections including chart
         $('#quoteCard, #chartSection, #detailsSection, #marketStatusSection').hide();
     }
 
@@ -463,10 +463,10 @@ class StockManager {
                 </div>
             `);
             
-            // Show all sections
-            $('#quoteCard, #chartSection, #detailsSection, #marketStatusSection').show();
+            // Show all sections except chart (will be shown conditionally)
+            $('#quoteCard, #detailsSection, #marketStatusSection').show();
             
-            // Update chart AFTER sections are visible
+            // Update chart AFTER sections are visible - this will determine if chart should be shown
             await this.updateChart();
             
             // Re-setup event listeners to ensure they work after content update
@@ -628,12 +628,22 @@ class StockManager {
             }));
             
             console.log('Chart data loaded:', data.length, 'points');
+            
+            // Check if we have sufficient data for a meaningful chart
+            if (data.length <= 1) {
+                console.log('Insufficient chart data, hiding chart section');
+                $('#chartSection').hide();
+                return;
+            }
+            
+            // Show chart section and draw the chart
+            $('#chartSection').show();
             this.drawChart(canvas, data);
             
         } catch (error) {
             console.error('Failed to update chart:', error);
-            // Draw fallback chart with sample data
-            this.drawFallbackChart(canvas);
+            // Hide chart section on error
+            $('#chartSection').hide();
         }
     }
 
@@ -733,7 +743,7 @@ class StockManager {
         if (cap >= 1000000) {
             return '$' + (cap / 1000000).toFixed(2) + 'M';
         }
-        return '$' + cap.toLocaleString();
+        return cap.toLocaleString();
     }
 
     debounce(func, wait) {

@@ -432,34 +432,41 @@
                 </div>
             </div>
 
-            <div class="app" id="mobidziennikApp">
+           <div class="app" id="mobidziennikApp">
                 <span class="appTitle">mobiDziennik</span>
                 <div class="mobi-content">
-                    <div class="mobi-filters">
-                        <div class="filter-list">
-                            <div class="filter-item active" data-filter="upcoming">
-                                <span class="material-symbols-outlined">event_upcoming</span>
-                                <span>Nadchodzące</span>
+                    <div class="mobi-sidebar">
+                        
+                        <div class="mobi-filters">
+                            <div class="filter-item active" data-filter="all">
+                                <span class="material-symbols-outlined">view_agenda</span>
+                                <span>Wszystkie</span>
                             </div>
                             <div class="filter-item" data-filter="today">
                                 <span class="material-symbols-outlined">today</span>
                                 <span>Dzisiaj</span>
                             </div>
-                            <div class="filter-item" data-filter="tomorrow">
-                                <span class="material-symbols-outlined">event</span>
-                                <span>Jutro</span>
+                            <div class="filter-item" data-filter="week">
+                                <span class="material-symbols-outlined">date_range</span>
+                                <span>Tydzień</span>
                             </div>
-                            <div class="filter-item" data-filter="quiz">
+                            <div class="filter-item" data-filter="tests">
                                 <span class="material-symbols-outlined">quiz</span>
-                                <span>Sprawdziany</span>
+                                <span>Testy</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mobi-events">
+                    <div class="mobi-main">
+                        <div class="events-list" id="eventsList">
+                            <!-- Events will be loaded here -->
+                        </div>
                     </div>
-                </div>
+                    
             </div>
+
+            
+        </div>
 
         </div>
 

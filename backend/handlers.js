@@ -854,6 +854,56 @@ export function setup(mainWindow) {
         }
     });
 
+    // New lesson schedule handlers
+
+    ipcMain.handle("mobi-get-schedule", async () => {
+        try {
+            const result = await MobidziennikService.getSchedule();
+            return {
+                success: true,
+                data: result,
+            };
+        } catch (error) {
+            console.error("Mobidziennik get schedule error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("mobi-get-lessons", async (event, params = {}) => {
+        try {
+            const result = await MobidziennikService.getLessons(params);
+            return {
+                success: true,
+                data: result,
+            };
+        } catch (error) {
+            console.error("Mobidziennik get lessons error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
+    ipcMain.handle("mobi-get-day-data", async (event, params = {}) => {
+        try {
+            const result = await MobidziennikService.getDayData(params);
+            return {
+                success: true,
+                data: result,
+            };
+        } catch (error) {
+            console.error("Mobidziennik get day data error:", error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    });
+
     // RSS
     const rssManager = new RSSManager();
 

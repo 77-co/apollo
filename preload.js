@@ -318,7 +318,16 @@ const MobidziennikService = {
         ipcRenderer.invoke('mobi-get-by-type'),
         
     getDateRange: (params) => 
-        ipcRenderer.invoke('mobi-get-date-range', params)
+        ipcRenderer.invoke('mobi-get-date-range', params),
+
+    getSchedule: () => 
+        ipcRenderer.invoke('mobi-get-schedule'),
+    
+    getLessons: (params) => 
+        ipcRenderer.invoke('mobi-get-lessons', params),
+    
+    getDayData: (params) => 
+        ipcRenderer.invoke('mobi-get-day-data', params)
 };
 
 const SystemInformationService = {
