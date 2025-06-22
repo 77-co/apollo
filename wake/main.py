@@ -34,13 +34,11 @@ def amplify(audio_data, gain=1.5):  # Reduced gain
     return samples.tobytes()
 
 def denoise(audio_data):
-    samples = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32)
-    # Less aggressive noise reduction
-    reduced = nr.reduce_noise(y=samples, sr=16000, prop_decrease=0.8, stationary=False)
-    # Clip values before casting to avoid invalid value warnings
-    reduced = np.nan_to_num(reduced)  # Replace NaN with zeros
-    reduced = np.clip(reduced, -32768, 32767)  # Ensure values are in int16 range
-    return reduced.astype(np.int16).tobytes()
+    # samples = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32)
+    # # Less aggressive noise reduction
+    # reduced = nr.reduce_noise(y=samples, sr=16000, prop_decrease=0.8, stationary=False)
+    # return reduced.astype(np.int16).tobytes()
+    return audio_data # Skip denoising for now
 
 def is_wake_word_valid(word_info):
     """Validate wake word detection with multiple criteria"""
