@@ -465,10 +465,6 @@
                                 <span class="material-symbols-outlined">quiz</span>
                                 <span>Sprawdziany</span>
                             </div>
-                            <div class="filter-item" data-filter="test">
-                                <span class="material-symbols-outlined">assignment</span>
-                                <span>Testy</span>
-                            </div>
                         </div>
                     </div>
 
@@ -595,7 +591,6 @@
                         <span class="volume-percentage">50%</span>
                     </div>
                 </div>
-
                 <div class="widget sm" id="mobidziennik" onclick="openApp('mobidziennikApp', this)">
                     <div class="mobiLoginAlert active">
                         <p>Ładowanie wydarzeń z mobiDziennka...</p>
@@ -606,12 +601,12 @@
                             <h3>mobiDziennik</h3>
                             <span class="next-event-indicator">Następne wydarzenie</span>
                         </div>
+                        <span class="event-date"></span>
                     </div>
 
                     <div class="current-event">
                         <h4 class="event-title"></h4>
-                        <div class="event-meta">
-                            <span class="event-date"></span>
+                        <div class="event-meta" style="display: none;">
                             <span class="event-type"></span>
                         </div>
                     </div>

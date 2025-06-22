@@ -106,9 +106,12 @@ function displayNextEvent() {
     // Clean up title - remove escape characters and truncate if too long
     let title = nextEvent.title || nextEvent.subject || 'Wydarzenie';
     title = title.replace(/\\/g, '').replace(/\.\.\./g, '');
+
+    let description = nextEvent.description || '';
+    description = description.replace(/\\/g, '').replace(/&amp;/g, '&');
     
     // Update widget content
-    mobiWidget.querySelector('.event-title').textContent = title;
+    mobiWidget.querySelector('.event-title').textContent = description;
     mobiWidget.querySelector('.event-date').textContent = dateDisplay;
     mobiWidget.querySelector('.event-type').textContent = eventType;
     
