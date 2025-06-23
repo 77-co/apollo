@@ -202,6 +202,13 @@ export async function synthesise(text, voiceName = "ash") {
     });
 }
 
+export async function killPlayer() {
+    if (currentPlayer) {
+        currentPlayer.kill();
+        currentPlayer = null;
+    }
+}
+
 // Example usage
 // transcribeStream((chunk) => {
 //     console.log(`${new Date()} Chunk: ${chunk}`);

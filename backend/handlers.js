@@ -7,7 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import WakeWord from "./wake.js";
-import { transcribeStream, synthesise } from "./speech.js";
+import { transcribeStream, synthesise, killPlayer } from "./speech.js";
 import settings from "./settings/settings.js";
 import memos from "./memos/index.js";
 import { RSSManager } from './rss/index.js';
@@ -1668,6 +1668,11 @@ export function setup(mainWindow) {
     ipcMain.handle("speech-synthesise", async (event, text) => {
         const voice = store.get("settings.speech.voice", "alloy");
         synthesise(text, voice);
+    });
+
+    ipcMain.handle("speech-kill-player", async () => {
+        await killPlayer();
+        wake.paused = false;
     });
 
     // Settings handling

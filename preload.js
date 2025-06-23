@@ -267,6 +267,7 @@ const SpeechService = {
         ipcRenderer.invoke('speech-transcribe-stream'),
     synthesise: (text) =>
         ipcRenderer.invoke('speech-synthesise', text),
+    killPlayer: () => ipcRenderer.invoke('speech-kill-player'),
 };
 
 const settings = {
