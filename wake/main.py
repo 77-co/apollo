@@ -124,10 +124,10 @@ print("READY")
 def reader_thread():
     arecord_cmd = [
         'arecord',
-        '-D', 'shared_mic',     # <- your dsnoop alias
+        '-D', 'plug:shared_mic',     # <- your dsnoop alias
         '-f', 'S16_LE',
         '-r', '16000',           # <- this was wrong in your pasted version (44000!)
-        '-c', '2',               # <- try stereo instead of mono
+        '-c', '1',               # <- try stereo instead of mono
         '-t', 'raw'
     ]
 
@@ -137,10 +137,7 @@ def reader_thread():
             if not data:
                 break
 
-            # convert stereo to mono
-            samples = np.frombuffer(data, dtype=np.int16)
-            mono = samples.reshape(-1, 2).mean(axis=1).astype(np.int16).tobytes()
-            q.put(mono)
+            q.put(data)
 
 # start reader in background
 threading.Thread(target=reader_thread, daemon=True).start()

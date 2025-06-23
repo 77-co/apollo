@@ -46,14 +46,14 @@ export function transcribeStream(onTranscript, onFinalResult) {
         .record({
             channels: 1, // Mono audio
             audioType: "raw", // Raw PCM data
-            sampleRateHertz: 44000,
+            sampleRateHertz: 16000,
             threshold: 0, // Silence threshold
             verbose: false,
             recordProgram:
                 process.env.NODE_ENV === "production" ? "arecord" : "rec", // 'arecord' or 'rec'
             recorder: "sox",
             device:
-                process.env.NODE_ENV === "production" ? "shared_device" : null, // Specify device if necessary
+                process.env.NODE_ENV === "production" ? "plug:shared_device" : null, // Specify device if necessary
         })
         .stream()
         .on("error", console.error);
