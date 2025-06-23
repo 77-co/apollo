@@ -157,7 +157,7 @@ class ApolloUI {
         $('.transcript').text(text);
     }
 
-    async handleFinishedSpeech(finalTranscript) {
+   async handleFinishedSpeech(finalTranscript) {
         // Prevent multiple concurrent speech processing
         if (this.isStreamingResponse) {
             console.log('Already streaming response, ignoring speech input');
@@ -167,6 +167,9 @@ class ApolloUI {
 
         if (finalTranscript.length === 0) { // If no speech was detected
             this.isProcessingSpeech = false;
+            
+            // Hide the overlay regardless of conversation state
+            $('.apolloOverlay').removeClass('active');
             
             if (this.conversationId) {
                 // If there is an active conversation, switch back to chat screen.
