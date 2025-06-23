@@ -27,15 +27,11 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 async function startDebugServer() {
-    if (process.env.NODE_ENV !== 'production') {
-        try {
-            await debugServer.start();
-            console.log('debugging server started on port', debugServer.port);
-        } catch (error) {
-            console.error('Failed to start DebugServer:', error);
-        }
-    } else {
-        console.log('DebugServer disabled in production mode');
+    try {
+        await debugServer.start();
+        console.log('debugging server started on port', debugServer.port);
+    } catch (error) {
+        console.error('Failed to start DebugServer:', error);
     }
 }
 
