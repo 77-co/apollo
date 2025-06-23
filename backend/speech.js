@@ -119,7 +119,8 @@ export function transcribeStream(onTranscript, onFinalResult) {
 
             // End recognition and stop recording
             recognizeStream.end();
-            audioStream.destroy();
+            if (audioStream) audioStream.destroy();
+            if (audioProcess) audioProcess.kill();
             onFinalResult(lastTranscript);
         }
     }, 300);
