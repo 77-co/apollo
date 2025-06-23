@@ -41,30 +41,17 @@ export function transcribeStream(onTranscript, onFinalResult) {
         interimResults: true, // For real-time results
     };
 
-    // Create a readable stream from the microphone
-    const audioStream = record
-        .record({
-            channels: 1, // Mono audio
-            audioType: "raw", // Raw PCM data
-            sampleRateHertz: 16000,
-            threshold: 0, // Silence threshold
-            verbose: false,
-            recordProgram:
-                process.env.NODE_ENV === "production" ? "arecord" : "rec", // 'arecord' or 'rec'
-            recorder: "sox",
-            device:
-                process.env.NODE_ENV === "production" ? "plug:shared_device" : null, // Specify device if necessary
-        })
-        .stream()
-        .on("error", console.error);
+    let audioStream;
+    let recognizeStream;
+    let audioProcess = null;
 
-    let lastSpokenTime = Date.now(); // Track last speech time
+    // Initialize variables for tracking speech
+    let lastSpokenTime = Date.now();
     const silenceTimeout = 3000; // Max silence window in ms
-
-    // Initialize the streaming recognize client
     let lastTranscript = ""; // To store the last full transcript
 
-    const recognizeStream = client
+    // Create the recognition stream
+    recognizeStream = client
         .streamingRecognize(request)
         .on("error", console.error)
         .on("data", (data) => {
@@ -74,12 +61,9 @@ export function transcribeStream(onTranscript, onFinalResult) {
             const transcript = result?.alternatives[0]?.transcript;
             const isFinal = result?.isFinal;
 
-            if (transcript) {
-                // Only output new transcription if it differs from the last one
-                if (transcript !== lastTranscript) {
-                    onTranscript(transcript); // Pass the updated transcript to the callback
-                    lastTranscript = transcript;
-                }
+            if (transcript && transcript !== lastTranscript) {
+                onTranscript(transcript); // Pass the updated transcript to the callback
+                lastTranscript = transcript;
             }
 
             if (isFinal) {
@@ -88,8 +72,45 @@ export function transcribeStream(onTranscript, onFinalResult) {
             }
         });
 
-    // Pipe the audio stream to the recognition stream
-    audioStream.pipe(recognizeStream);
+    if (process.env.NODE_ENV === "production") {
+        // In production, use direct arecord spawn
+        audioProcess = spawn("arecord", [
+            "-D", "plug:shared_mic", // Use the specific audio device
+            "-f", "S16_LE",
+            "-r", "16000",
+            "-c", "1",
+            "-t", "raw",
+        ]);
+
+        audioProcess.stderr.on("data", (err) => {
+            console.error("arecord error:", err.toString());
+        });
+
+        audioProcess.on("exit", (code) => {
+            console.log("arecord exited with code", code);
+        });
+
+        // Pipe arecord output to Google STT
+        audioProcess.stdout.pipe(recognizeStream);
+    } else {
+        // In development, use node-record-lpcm16
+        audioStream = record
+            .record({
+                channels: 1, // Mono audio
+                audioType: "raw", // Raw PCM data
+                sampleRateHertz: 16000,
+                threshold: 0, // Silence threshold
+                verbose: false,
+                recordProgram: "rec", // Use 'rec' for development
+                recorder: "sox",
+                device: null, // No specific device in development
+            })
+            .stream()
+            .on("error", console.error);
+
+        // Pipe the audio stream to the recognition stream
+        audioStream.pipe(recognizeStream);
+    }
 
     // Monitor silence
     const silenceChecker = setInterval(() => {
