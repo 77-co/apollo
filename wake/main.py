@@ -9,6 +9,8 @@ import noisereduce as nr
 from vosk import Model, KaldiRecognizer
 from collections import deque
 import os
+import threading
+import subprocess
 
 from dotenv import load_dotenv
 load_dotenv()  # take environment variables
@@ -119,23 +121,41 @@ def callback(indata, frames, time, status):
 
 print("READY")
 
-print(sd.query_devices())
-with sd.RawInputStream(samplerate=16000, blocksize=2048, dtype='int16',
-                       channels=1, callback=callback, device=3 if is_prod else None):
-    while True:
-        data = q.get()
+def reader_thread():
+    arecord_cmd = [
+        'arecord',
+        '-D', 'shared_mic',     # <- your dsnoop alias
+        '-f', 'S16_LE',
+        '-r', '44000',
+        '-c', '1',
+        '-t', 'raw'
+    ]
+    
+    with subprocess.Popen(arecord_cmd, stdout=subprocess.PIPE) as proc:
+        while True:
+            data = proc.stdout.read(2048)
+            if not data:
+                break
+            q.put(data)  # just like your callback would
+
+# start reader in background
+threading.Thread(target=reader_thread, daemon=True).start()
+
+# main loop reads from queue
+while True:
+    data = q.get()
         
-        if rec.AcceptWaveform(data):
-            result = json.loads(rec.Result())
+    if rec.AcceptWaveform(data):
+        result = json.loads(rec.Result())
             
-            # Only process final results for wake word detection
-            process_final_result(result)
+        # Only process final results for wake word detection
+        process_final_result(result)
             
-            # Clear processed texts on final result
-            processed_texts.clear()
-        else:
-            # Still get partial results but don't use them for wake detection
-            partial = json.loads(rec.PartialResult())
-            text = partial.get("partial", "")
-            # Optionally uncomment for debugging:
-            # print(f"Partial: {text}")
+        # Clear processed texts on final result
+        processed_texts.clear()
+    else:
+        # Still get partial results but don't use them for wake detection
+        partial = json.loads(rec.PartialResult())
+        text = partial.get("partial", "")
+        # Optionally uncomment for debugging:
+        # print(f"Partial: {text}")

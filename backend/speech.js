@@ -1,10 +1,10 @@
 // Voice recognition
-import { SpeechClient } from '@google-cloud/speech';
-import record from 'node-record-lpcm16';
+import { SpeechClient } from "@google-cloud/speech";
+import record from "node-record-lpcm16";
 
 // TTS
-import OpenAI from 'openai';
-import { spawn } from 'child_process';
+import OpenAI from "openai";
+import { spawn } from "child_process";
 
 const TTS_INSTRUCTIONS = `You are a voice assistant speaking in a clear, neutral tone. Your voice should sound calm, concise, and slightly warm — welcoming, but not overly emotional or enthusiastic. Avoid exaggerated inflection. Maintain a natural, human cadence, with subtle pauses where appropriate. Your delivery should be helpful and attentive, without sounding robotic or monotone.`;
 
@@ -44,28 +44,30 @@ export function transcribeStream(onTranscript, onFinalResult) {
     // Create a readable stream from the microphone
     const audioStream = record
         .record({
-            channels: 1,  // Mono audio
-            audioType: 'raw',  // Raw PCM data
-            sampleRateHertz: 16000,
+            channels: 1, // Mono audio
+            audioType: "raw", // Raw PCM data
+            sampleRateHertz: 44000,
             threshold: 0, // Silence threshold
             verbose: false,
-            recordProgram: 'rec', // 'arecord' or 'rec'
-            recorder: 'sox',
-            device: process.env.NODE_ENV === "production" ? "plughw:3,0" : null, // Specify device if necessary
+            recordProgram:
+                process.env.NODE_ENV === "production" ? "arecord" : "rec", // 'arecord' or 'rec'
+            recorder: "sox",
+            device:
+                process.env.NODE_ENV === "production" ? "shared_device" : null, // Specify device if necessary
         })
         .stream()
-        .on('error', console.error);
+        .on("error", console.error);
 
     let lastSpokenTime = Date.now(); // Track last speech time
     const silenceTimeout = 3000; // Max silence window in ms
 
     // Initialize the streaming recognize client
-    let lastTranscript = ''; // To store the last full transcript
+    let lastTranscript = ""; // To store the last full transcript
 
     const recognizeStream = client
         .streamingRecognize(request)
-        .on('error', console.error)
-        .on('data', (data) => {
+        .on("error", console.error)
+        .on("data", (data) => {
             lastSpokenTime = Date.now(); // Reset silence timer
 
             const result = data.results[0];
@@ -75,7 +77,7 @@ export function transcribeStream(onTranscript, onFinalResult) {
             if (transcript) {
                 // Only output new transcription if it differs from the last one
                 if (transcript !== lastTranscript) {
-                    onTranscript(transcript);  // Pass the updated transcript to the callback
+                    onTranscript(transcript); // Pass the updated transcript to the callback
                     lastTranscript = transcript;
                 }
             }
