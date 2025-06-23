@@ -1,9 +1,13 @@
 function animateContentChange(contentCategoryId) {
+    // Check if the clicked category is already active
+    const clickedCategory = $(`#settings .categories .category[data-category-id="${contentCategoryId}"]`);
+    if (clickedCategory.hasClass("active")) {
+        return; // Don't animate if already active
+    }
+
     // Set category buttons
     $("#settings .categories .category").removeClass("active");
-    $(
-        `#settings .categories .category[data-category-id="${contentCategoryId}"]`
-    ).addClass("active");
+    clickedCategory.addClass("active");
 
     // Step 1: Animate content out of view
     anime.remove("#settings .content");
@@ -75,5 +79,4 @@ function setting(el) {
         // Is a select menu
         window.backend.settings.set($(el).data("setting-key"), el.value);
     }
-
 }
