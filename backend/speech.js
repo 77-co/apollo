@@ -203,9 +203,16 @@ export async function synthesise(text, voiceName = "ash") {
 }
 
 export async function killPlayer() {
+    // Kill any currently playing audio
     if (currentPlayer) {
         currentPlayer.kill();
         currentPlayer = null;
+    }
+
+    // Abort any ongoing TTS stream
+    if (currentStreamAbortController) {
+        currentStreamAbortController.abort();
+        currentStreamAbortController = null;
     }
 }
 
