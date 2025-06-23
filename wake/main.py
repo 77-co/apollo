@@ -126,17 +126,21 @@ def reader_thread():
         'arecord',
         '-D', 'shared_mic',     # <- your dsnoop alias
         '-f', 'S16_LE',
-        '-r', '44000',
-        '-c', '1',
+        '-r', '16000',           # <- this was wrong in your pasted version (44000!)
+        '-c', '2',               # <- try stereo instead of mono
         '-t', 'raw'
     ]
-    
+
     with subprocess.Popen(arecord_cmd, stdout=subprocess.PIPE) as proc:
         while True:
-            data = proc.stdout.read(2048)
+            data = proc.stdout.read(4096)  # 2 bytes * 2 channels * 1024 frames
             if not data:
                 break
-            q.put(data)  # just like your callback would
+
+            # convert stereo to mono
+            samples = np.frombuffer(data, dtype=np.int16)
+            mono = samples.reshape(-1, 2).mean(axis=1).astype(np.int16).tobytes()
+            q.put(mono)
 
 # start reader in background
 threading.Thread(target=reader_thread, daemon=True).start()
