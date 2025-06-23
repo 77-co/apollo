@@ -1671,8 +1671,7 @@ export function setup(mainWindow) {
     });
 
     ipcMain.handle("speech-kill-player", async () => {
-        await killPlayer();
-        wake.paused = false;
+        killPlayer();
     });
 
     // Settings handling

@@ -202,7 +202,7 @@ export async function synthesise(text, voiceName = "ash") {
     });
 }
 
-export async function killPlayer() {
+export function killPlayer() {
     // Kill any currently playing audio
     if (currentPlayer) {
         currentPlayer.kill();
