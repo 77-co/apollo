@@ -31,6 +31,7 @@ class ApolloUI {
         this.setupEventListeners();
         this.startPromptCycle();
         this.setupAnimations();
+        this.setupMicButton(); // Add microphone button setup
     }
 
     setupEventListeners() {
@@ -66,6 +67,33 @@ class ApolloUI {
                     break;
             }
         });
+    }
+
+    setupMicButton() {
+        const micButton = document.getElementById('startConversationBtn');
+        if (micButton) {
+            micButton.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Prevent multiple listening sessions
+                if (this.isProcessingSpeech || this.isStreamingResponse) {
+                    console.log('Already processing, ignoring mic button click');
+                    return;
+                }
+
+                // Check if realtime mode is enabled
+                const isRealtime = await window.backend.settings.get("ai.realtime");
+                
+                if (isRealtime) {
+                    const sessionToken = await window.backend.assistant.createRealtimeSession();
+                    this.startRealtime(sessionToken);
+                    this.switchScreen("realtime");
+                } else {
+                    this.startListening();
+                }
+            });
+        }
     }
 
     setupAnimations() {
@@ -129,6 +157,67 @@ class ApolloUI {
         this.currentScreen = screenName;
     }
 
+    hideMicButton() {
+        const micButton = document.getElementById('startConversationBtn');
+        if (micButton) {
+            // Store original styles to restore later
+            if (!micButton.dataset.originalStyles) {
+                const computedStyle = window.getComputedStyle(micButton);
+                micButton.dataset.originalDisplay = computedStyle.display;
+                micButton.dataset.originalOpacity = computedStyle.opacity;
+                micButton.dataset.originalTransform = computedStyle.transform;
+                micButton.dataset.originalPointerEvents = computedStyle.pointerEvents;
+                micButton.dataset.originalStyles = 'true';
+            }
+            
+            // Disable interactions during animation
+            micButton.style.pointerEvents = 'none';
+            
+            anime({
+                targets: micButton,
+                scale: [1, 0],
+                opacity: [1, 0],
+                duration: 200,
+                easing: 'easeInBack',
+                complete: () => {
+                    micButton.style.visibility = 'hidden';
+                }
+            });
+        }
+    }
+
+    showMicButton() {
+        const micButton = document.getElementById('startConversationBtn');
+        if (micButton) {
+            // Restore original styles
+            micButton.style.visibility = 'visible';
+            micButton.style.pointerEvents = micButton.dataset.originalPointerEvents || 'auto';
+            
+            anime({
+                targets: micButton,
+                scale: [0, 1],
+                opacity: [0, 1],
+                duration: 200,
+                easing: 'easeOutBack',
+                complete: () => {
+                    // Clean reset without removing opacity
+                    micButton.style.pointerEvents = micButton.dataset.originalPointerEvents || 'auto';
+                    
+                    // Set explicit opacity to 1 (visible)
+                    micButton.style.opacity = micButton.dataset.originalOpacity === 'auto' || 
+                                            micButton.dataset.originalOpacity === '' ? 
+                                            '1' : micButton.dataset.originalOpacity;
+                    
+                    // Only remove transform, keep opacity
+                    micButton.style.removeProperty('transform');
+                    
+                    // Force a reflow to ensure clean state
+                    micButton.offsetHeight;
+                }
+            });
+        }
+    }
+
     startListening() {
         // Prevent multiple listening sessions
         if (this.isProcessingSpeech || this.isStreamingResponse) {
@@ -137,6 +226,9 @@ class ApolloUI {
         }
 
         this.isProcessingSpeech = true;
+
+        // Hide the microphone button when starting to listen
+        this.hideMicButton();
 
         $('.transcript').html('');
         $('.apolloOverlay').addClass('active');
@@ -164,6 +256,7 @@ class ApolloUI {
         if (this.isStreamingResponse) {
             console.log('Already streaming response, ignoring speech input');
             this.isProcessingSpeech = false;
+            this.showMicButton(); // Show button if speech is ignored
             return;
         }
 
@@ -181,6 +274,8 @@ class ApolloUI {
                 this.resetConversation();
             }
 
+            // Show the microphone button again
+            this.showMicButton();
             return;
         }
 
@@ -304,8 +399,12 @@ class ApolloUI {
             this.updateTranscript('');
 
             // Synthesise the full response
-            if (await window.backend.settings.get('speech.enabled'))
-                window.backend.speech.synthesise(currentResponse);
+            if (await window.backend.settings.get('speech.enabled')) {
+                await window.backend.speech.synthesise(currentResponse);
+            }
+
+            // Show the microphone button again after AI is done talking
+            this.showMicButton();
 
         } catch (error) {
             console.error('Error getting response:', error);
@@ -319,6 +418,9 @@ class ApolloUI {
             
             document.getElementById('typingIndicator').classList.add('hidden');
             this.updateLastAssistantMessage('Przepraszam, wystąpił błąd. Spróbuj ponownie.');
+            
+            // Show the microphone button again on error
+            this.showMicButton();
         } finally {
             // Ensure streaming flag is reset even on error
             this.isStreamingResponse = false;
@@ -347,6 +449,9 @@ class ApolloUI {
 
         // Switch back to idle screen
         this.switchScreen('idle');
+
+        // Show the microphone button when resetting
+        this.showMicButton();
     }
 
     addMessage(role, content) {
@@ -408,6 +513,9 @@ class ApolloUI {
     }
 
     async startRealtime(ephemeralKey) {
+        // Hide the microphone button when starting realtime mode
+        this.hideMicButton();
+
         const pc = new RTCPeerConnection();
 
         const audioEl = document.createElement("audio");

@@ -136,13 +136,6 @@ span.material-symbols-outlined {
     align-items: center;
 
     font-size: 1.6rem;
-
-    transition: all 0.3s;
-}
-
-.keyboard .key:active {
-    transform: scale(0.85);
-    background-color: var(--active-bg-1);
 }
 
 .keyboard .placeholder {
@@ -643,4 +636,150 @@ span.material-symbols-outlined {
 
 .apolloOverlay .prompt-intro {
     margin-bottom: 0;
+}
+
+/* Start conversation / interrupt button */
+.start-conversation-btn {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    border: none;
+    background: var(--active-bg-1);
+    color: var(--active-fg-1);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.start-conversation-btn .material-symbols-outlined {
+    font-size: 1.8rem;
+    transition: all 0.3s ease;
+}
+
+/* Stop square icon when in interrupt mode */
+.start-conversation-btn .stop-square {
+    width: 1.2rem;
+    height: 1.2rem;
+    background-color: white;
+    border-radius: 0.2rem;
+    transition: all 0.3s ease;
+    display: none;
+}
+
+/* Show button on idle screen */
+.idleScreen.active ~ .start-conversation-btn {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Show button when AI is speaking (use class-based approach) */
+.start-conversation-btn.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Mobile-friendly touch feedback instead of hover */
+.start-conversation-btn:active {
+    transform: translateX(-50%) scale(0.9);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Button states */
+.start-conversation-btn.listening {
+    animation: buttonPulse 1.5s infinite ease-in-out;
+    background: var(--active-bg-1);
+}
+
+.start-conversation-btn.interrupt-mode {
+    background: #ff4444;
+    color: white;
+    animation: interruptPulse 2s infinite ease-in-out;
+}
+
+/* Hide mic icon and show stop square when in interrupt mode */
+.start-conversation-btn.interrupt-mode .material-symbols-outlined {
+    display: none;
+}
+
+.start-conversation-btn.interrupt-mode .stop-square {
+    display: block;
+}
+
+/* Animations */
+@keyframes buttonPulse {
+    0%, 100% {
+        transform: translateX(-50%) scale(1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        transform: translateX(-50%) scale(1.05);
+        box-shadow: 0 6px 30px var(--active-bg-1);
+    }
+}
+
+@keyframes interruptPulse {
+    0%, 100% {
+        transform: translateX(-50%) scale(1);
+        box-shadow: 0 4px 20px rgba(255, 68, 68, 0.3);
+    }
+    50% {
+        transform: translateX(-50%) scale(1.03);
+        box-shadow: 0 6px 25px rgba(255, 68, 68, 0.5);
+    }
+}
+
+/* Hide button when processing or listening (but not when speaking) */
+.listeningProcessingScreen.active ~ .start-conversation-btn:not(.interrupt-mode),
+.realtimeScreen.active ~ .start-conversation-btn:not(.interrupt-mode) {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 768px) {
+    .start-conversation-btn {
+        width: 3.5rem;
+        height: 3.5rem;
+        bottom: 1rem;
+    }
+    
+    .start-conversation-btn .material-symbols-outlined {
+        font-size: 1.6rem;
+    }
+    
+    .start-conversation-btn .stop-square {
+        width: 1rem;
+        height: 1rem;
+    }
+}
+
+/* Touch feedback for better mobile experience */
+.start-conversation-btn {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+/* Ensure proper contrast in dark mode */
+:root.dark-mode .start-conversation-btn {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+:root.dark-mode .start-conversation-btn.interrupt-mode {
+    box-shadow: 0 4px 20px rgba(255, 68, 68, 0.4);
+}
+
+/* Ensure white stop square is always white */
+.start-conversation-btn.interrupt-mode .stop-square {
+    background-color: white !important;
 }
