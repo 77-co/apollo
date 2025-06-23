@@ -259,6 +259,17 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="setting-row">
+                            <div class="setting-text">
+                                <h3 class="setting-title">Używaj aktywacji głosem</h3>
+                                <p class="setting-description">Apollo zacznie słuchać, gdy wywołasz go po imieniu.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onclick="setting(this)" class="setting"
+                                    data-setting-key="speech.wakeword">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
                     </div>
                     <div class="category" id="wifiSettings">
                         <div class="setting-row">
@@ -269,13 +280,17 @@
                             </div>
                             <div class="scan-list">
                                 <div class="el active">
-                                    <span class="material-symbols-outlined">network_wifi_3_bar</span>
-                                    <span>ZSL_gosc</span>
+                                    <span class="material-symbols-outlined">signal_wifi_4_bar</span>
+                                    <span>Apollo Hotspot</span>
                                 </div>
                                 <div class="el">
+                                    <span class="material-symbols-outlined">network_wifi_2_bar</span>
+                                    <span>ZSL_gosc</span>
+                                </div>
+                                <!-- <div class="el">
                                     <span class="material-symbols-outlined">network_wifi_1_bar_locked</span>
                                     <span>testsiec</span>
-                                </div>
+                                </div> -->
                                 <div class="footer">
                                     <span>Szukanie<span class="animated-ellipsis">...</span></span>
                                 </div>

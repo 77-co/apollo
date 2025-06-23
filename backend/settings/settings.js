@@ -8,6 +8,7 @@ const store = new Store();
 const values = {
     "speech.enabled": { validator: validators.bool, default: true },
     "speech.voice": { validator: validators.voice, default: "ash" },
+    "speech.wakeword": { validator: validators.bool, default: true },
 
     "ui.darkMode": { validator: validators.bool, default: false },
     "ui.themeColor": { validator: validators.themeColor, default: "blue" },

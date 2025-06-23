@@ -40,6 +40,8 @@ class ApolloUI {
             const { event } = e.detail;
 
             if (event === 'wake' && !this.isStreamingResponse && !this.isProcessingSpeech) {
+                if (!await window.backend.settings.get("speech.wakeword")) return;
+
                 if (isRealtime) {
                     const sessionToken = await window.backend.assistant.createRealtimeSession();
                     this.startRealtime(sessionToken);
