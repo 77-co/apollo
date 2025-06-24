@@ -412,6 +412,11 @@ export function setup(mainWindow) {
         return { success: true };
     });
 
+    ipcMain.handle("load-settings", () => {
+        console.log("loading settings")
+        mainWindow.webContents.send("load-settings", { event: "load-settings" });
+    });
+
     // Updated to just return cached error data immediately
     ipcMain.handle("request-error-logs", () => {
         return {

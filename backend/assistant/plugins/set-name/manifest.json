@@ -1,0 +1,14 @@
+{
+    "name": "setName",
+    "description": "Sets the user's name in the system to be used for personalized interactions.",
+    "parameters": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The user's new name."
+            }
+        }
+    }
+}

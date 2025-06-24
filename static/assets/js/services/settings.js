@@ -45,9 +45,7 @@ $("#settings .categories .category").on("click", function (e) {
     animateContentChange($(e.target).data("category-id"));
 });
 
-$(window).on("load", function () {
-    $("#settings .categories .category:first-child").click();
-
+const loadSettings = () => {
     $("#settings .setting").each(async function (i, el) {
         if (el.tagName === "INPUT" && $(el).attr("type") === "checkbox") {
             // Is a checkbox
@@ -66,7 +64,17 @@ $(window).on("load", function () {
             );
         }
     });
+}
+
+$(window).on("load", () => {
+    $("#settings .categories .category:first-child").click();
+    loadSettings();
+    window.backend.settings.initialize();
 });
+window.addEventListener("load-settings", () => {
+    loadSettings();
+    updateWeather();
+})
 
 function setting(el) {
     if (el.tagName === "INPUT" && $(el).attr("type") === "checkbox") {

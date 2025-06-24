@@ -136,6 +136,12 @@ span.material-symbols-outlined {
     align-items: center;
 
     font-size: 1.6rem;
+    transition: all 0.3s;
+}
+
+.keyboard .key:active {
+    transform: scale(0.85);
+    background-color: var(--active-bg-1);
 }
 
 .keyboard .placeholder {

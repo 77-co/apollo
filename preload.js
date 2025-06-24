@@ -269,6 +269,13 @@ const SpeechService = {
 };
 
 const settings = {
+    initialize: () => {
+        ipcRenderer.on("load-settings", (_) => {
+            window.dispatchEvent(
+                new CustomEvent("load-settings")
+            );
+        });
+    },
     set: (key, value) =>
         ipcRenderer.invoke('setting-set', key, value),
     get: (key) =>

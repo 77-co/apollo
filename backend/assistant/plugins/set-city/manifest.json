@@ -1,0 +1,14 @@
+{
+    "name": "setCity",
+    "description": "Sets the user's city of residence in the system for personalized and quicker interactions.",
+    "parameters": {
+        "type": "object",
+        "required": ["city"],
+        "properties": {
+            "city": {
+                "type": "string",
+                "description": "The user's new city of residence."
+            }
+        }
+    }
+}
