@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -75,12 +75,12 @@
             </div>
             <span class="material-symbols-outlined" id="closeAppButton">close</span>
             <div class="app" id="timeApp">
-                <span class="appTitle">Czas</span>
+                <span class="appTitle">Time</span>
                 <h1 class="fulltime"></h1>
                 <h3 class="fulldate"></h3>
             </div>
             <div class="app" id="weatherApp">
-                <span class="appTitle">Pogoda</span>
+                <span class="appTitle">Weather</span>
                 <div class="flex">
                     <div class="child">
                         <h2 class="cityName">Poznań</h2>
@@ -100,19 +100,19 @@
                 </div>
             </div>
             <div class="app" id="settings">
-                <span class="appTitle">Ustawienia</span>
+                <span class="appTitle">Settings</span>
                 <div class="categories">
                     <span class="category" data-category-id="aiSettings"><span
-                            class="material-symbols-outlined fill">network_intelligence</span>Apollo i Ty</span>
+                            class="material-symbols-outlined fill">network_intelligence</span>Apollo and You</span>
 
                     <span class="category" data-category-id="uiSettings"><span
-                            class="material-symbols-outlined fill">brush</span>Wygląd</span>
+                            class="material-symbols-outlined fill">brush</span>Appearance</span>
 
                     <span class="category" data-category-id="powerSettings"><span
-                            class="material-symbols-outlined fill">eco</span>Zasilanie</span>
+                            class="material-symbols-outlined fill">eco</span>Power</span>
 
                     <span class="category" data-category-id="speechSettings"><span
-                            class="material-symbols-outlined fill">mic</span>Mowa</span>
+                            class="material-symbols-outlined fill">mic</span>Speech</span>
 
                     <span class="category" data-category-id="wifiSettings"><span
                             class="material-symbols-outlined fill">wifi</span>Wi-Fi</span>
@@ -124,16 +124,15 @@
                             class="material-symbols-outlined fill">link</span>Apollo Link</span>
 
                     <span class="category" data-category-id="deviceinfoSettings"><span
-                            class="material-symbols-outlined fill">info</span>O urządzeniu</span>
+                            class="material-symbols-outlined fill">info</span>About Device</span>
 
                 </div>
                 <div class="content">
                     <div class="category" id="aiSettings">
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Tryb realtime</h3>
-                                <p class="setting-description">Prowadź płynną konwersację, bez powtórnych wybudzeń
-                                    słowem "Apollo" i czekania na odpowiedź.</p>
+                                <h3 class="setting-title">Realtime mode</h3>
+                                <p class="setting-description">Have a smooth conversation without repeated wake words and waiting for responses.</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" onclick="setting(this)" class="setting"
@@ -143,8 +142,8 @@
                         </div>
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Twoje imię</h3>
-                                <p class="setting-description">Apollo będzie zwracać się do Ciebie osobiście.</p>
+                                <h3 class="setting-title">Your name</h3>
+                                <p class="setting-description">Apollo will address you personally.</p>
                             </div>
                             <div class="input-wrapper">
                                 <input type="text" onchange="setting(this)" class="setting input"
@@ -153,8 +152,8 @@
                         </div>
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Twoje miasto</h3>
-                                <p class="setting-description">Apollo będzie mieć dostęp do lokalizacji. Lokalizacja może zostać również użyta do innych usług.</p>
+                                <h3 class="setting-title">Your city</h3>
+                                <p class="setting-description">Apollo will have access to location. Location may also be used for other services.</p>
                             </div>
                             <div class="input-wrapper">
                                 <input type="text" onblur="(async () => {await fetchCity();updateWeather()})();" onchange="setting(this)" class="setting input"
@@ -165,10 +164,8 @@
                     <div class="category" id="uiSettings">
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Tryb ciemny</h3>
-                                <p class="setting-description">Oszczędź oczu używając wygodniejszej alternatywy do
-                                    domyślnego
-                                    motywu.</p>
+                                <h3 class="setting-title">Dark mode</h3>
+                                <p class="setting-description">Save your eyes by using a more comfortable alternative to the default theme.</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" onclick="setting(this);refreshDarkMode()" id="darkModeSetting"
@@ -178,18 +175,18 @@
                         </div>
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Kolor wiodący</h3>
-                                <p class="setting-description">Kolor wiodący stosowany jest przy przyciskach, aktywnych elementach i więcej.</p>
+                                <h3 class="setting-title">Primary color</h3>
+                                <p class="setting-description">Primary color is used for buttons, active elements and more.</p>
                             </div>
                             <div class="select-wrapper">
                                 <select class="select setting" onchange="setting(this);setThemeColor(this.value);" data-setting-key="ui.themeColor">
-                                    <option value="blue">Niebieski</option>
-                                    <option value="purple">Fioletowy</option>
-                                    <option value="pink">Różowy</option>
-                                    <option value="red">Czerwony</option>
-                                    <option value="orange">Pomarańczowy</option>
-                                    <option value="yellow">Żółty</option>
-                                    <option value="green">Zielony</option>
+                                    <option value="blue">Blue</option>
+                                    <option value="purple">Purple</option>
+                                    <option value="pink">Pink</option>
+                                    <option value="red">Red</option>
+                                    <option value="orange">Orange</option>
+                                    <option value="yellow">Yellow</option>
+                                    <option value="green">Green</option>
                                 </select>
                             </div>
                         </div>
@@ -197,30 +194,30 @@
                     <div class="category" id="powerSettings">
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Wygaszacz ekranu</h3>
-                                <p class="setting-description">Wygaszacz ekranu przyciemnia ekran i wyświetla kojącą animację, datę i godzinę oraz muzykę. Wygaszacz ekranu nie wpływa na zużycie prądu.</p>
+                                <h3 class="setting-title">Screen saver</h3>
+                                <p class="setting-description">Screen saver dims the screen and displays soothing animation, date and time, and music. Screen saver does not affect power consumption.</p>
                             </div>
                             <div class="select-wrapper">
                                 <select class="select setting" onchange="setting(this)" data-setting-key="power.timeScreensaver">
-                                    <option value="60">Po minucie</option>
-                                    <option value="300">Po 5 minutach</option>
-                                    <option value="900">Po 15 minutach</option>
-                                    <option value="1800">Po 30 minutach</option>
+                                    <option value="60">After 1 minute</option>
+                                    <option value="300">After 5 minutes</option>
+                                    <option value="900">After 15 minutes</option>
+                                    <option value="1800">After 30 minutes</option>
                                 </select>
                             </div>
                         </div>
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Tryb low-power</h3>
-                                <p class="setting-description">Tryb low-power stanowi zastąpienie wygaszacza ekranu. Ogranicza on większość procesów w tle. Czas liczony jest od startu wygaszacza.</p>
+                                <h3 class="setting-title">Low-power mode</h3>
+                                <p class="setting-description">Low-power mode replaces the screen saver. It limits most background processes. Time is counted from screen saver start.</p>
                             </div>
                             <div class="select-wrapper">
                                 <select class="select setting" onchange="setting(this)" data-setting-key="power.timeLowPower">
-                                    <option value="0">Nigdy</option>
-                                    <option value="180">Po 3 minutach</option>
-                                    <option value="300">Po 5 minutach</option>
-                                    <option value="900">Po 15 minutach</option>
-                                    <option value="1800">Po 30 minutach</option>
+                                    <option value="0">Never</option>
+                                    <option value="180">After 3 minutes</option>
+                                    <option value="300">After 5 minutes</option>
+                                    <option value="900">After 15 minutes</option>
+                                    <option value="1800">After 30 minutes</option>
                                 </select>
                             </div>
                         </div>
@@ -228,8 +225,8 @@
                     <div class="category" id="speechSettings">
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Włącz mowę</h3>
-                                <p class="setting-description">Apollo będzie wypowiadać swoje odpowiedzi na głos.</p>
+                                <h3 class="setting-title">Enable speech</h3>
+                                <p class="setting-description">Apollo will speak its responses aloud.</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" onclick="setting(this)" class="setting"
@@ -239,9 +236,8 @@
                         </div>
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Głos Apollo</h3>
-                                <p class="setting-description">Apollo będzie używać poniższego głosu, gdy wypowiadanie
-                                    na głos jest włączone.</p>
+                                <h3 class="setting-title">Apollo voice</h3>
+                                <p class="setting-description">Apollo will use the voice below when speech is enabled.</p>
                             </div>
                             <div class="select-wrapper">
                                 <select class="select setting" onchange="setting(this)" data-setting-key="speech.voice">
@@ -261,8 +257,8 @@
                         </div>
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Używaj aktywacji głosem</h3>
-                                <p class="setting-description">Apollo zacznie słuchać, gdy wywołasz go po imieniu.</p>
+                                <h3 class="setting-title">Use voice activation</h3>
+                                <p class="setting-description">Apollo will start listening when you call it by name.</p>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" onclick="setting(this)" class="setting"
@@ -274,9 +270,8 @@
                     <div class="category" id="wifiSettings">
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Sieć</h3>
-                                <p class="setting-description">Wybierz sieć Wi-Fi której ma używać Apollo. Będzie on
-                                    wymagać jej do prawidłowego funkcjonowania.</p>
+                                <h3 class="setting-title">Network</h3>
+                                <p class="setting-description">Choose the Wi-Fi network that Apollo should use. It will require this for proper functioning.</p>
                             </div>
                             <div class="scan-list">
                                 <div class="el active">
@@ -292,7 +287,7 @@
                                     <span>testsiec</span>
                                 </div> -->
                                 <div class="footer">
-                                    <span>Szukanie<span class="animated-ellipsis">...</span></span>
+                                    <span>Searching<span class="animated-ellipsis">...</span></span>
                                 </div>
                             </div>
                         </div>
@@ -398,7 +393,7 @@
                 </div>
             </div>
             <div class="app" id="notes">
-                <span class="appTitle">Notatki</span>
+                <span class="appTitle">Notes</span>
                 <div class="noteView">
                     <div class="noteList"></div>
 
@@ -410,7 +405,7 @@
             </div>
 
             <div class="app" id="newsApp">
-                <span class="appTitle">Aktualności</span>
+                <span class="appTitle">News</span>
                 
                 <div class="news-content">
                     <!-- Compact Header -->
@@ -448,7 +443,7 @@
             </div>
 
            <div class="app" id="mobidziennikApp">
-                <span class="appTitle">mobiDziennik</span>
+                <span class="appTitle">mobiJournal</span>
                 <div class="mobi-content">
                     <div class="mobi-sidebar">
                         
