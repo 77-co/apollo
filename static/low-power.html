@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -74,7 +74,7 @@
         <main>
             <span id="time"></span>
             <span id="date"></span>
-            <span>Tryb low-power aktywny</span>
+            <span>Low-power mode active</span>
         </main>
 
         <script>
@@ -96,25 +96,25 @@
 
                 // Format the date
                 const days = [
-                    "Niedziela",
-                    "Poniedziałek",
-                    "Wtorek",
-                    "Środa",
-                    "Czwartek",
-                    "Piątek",
-                    "Sobota",
+                    "Sunday",
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
                 ];
 
                 const dayName = days[now.getDay()];
                 const dayNumber = now.getDate();
 
                 // Short month format based on locale
-                const shortMonth = now.toLocaleString("pl-PL", {
+                const shortMonth = now.toLocaleString("en-US", {
                     month: "short",
                 });
 
                 // Full month and year for detailed format
-                const fullMonth = now.toLocaleString("pl-PL", {
+                const fullMonth = now.toLocaleString("en-US", {
                     month: "long",
                 });
                 const year = now.getFullYear();

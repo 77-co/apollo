@@ -65,7 +65,7 @@
         </div>
         <div class="apps" id="apps">
             <div class="apolloOverlay">
-                <span class="prompt-intro">Słucham...</span>
+                <span class="prompt-intro">Listening...</span>
                 <p class="transcript"></p>
                 <div class="listening-processing-indicator">
                     <div class="circle"></div>
@@ -85,7 +85,7 @@
                     <div class="child">
                         <h2 class="cityName">Poznań</h2>
                         <h1 class="currentTemperature">15°</h1>
-                        <h3 class="currentState">Pochmurnie</h3>
+                        <h3 class="currentState">Cloudy</h3>
                         <div class="forecast" id="weatherWeekly">
                             <!-- Daily forecasts will be populated by JavaScript -->
                         </div>
@@ -93,7 +93,7 @@
                     <div class="child">
                         <h3>
                             <span class="material-symbols-outlined fill">auto_awesome</span>
-                            Podsumowanie Apollo
+                            Apollo Summary
                         </h3>
                         <div id="weatherSummary"></div>
                     </div>
@@ -294,10 +294,10 @@
                     </div>
                     <div class="category" id="spotifySettings">
                         <div class="spotifyDeviceAlert active">
-                            <p>Aby sterować Spotify, musisz uruchomić odtwarzanie na jakimś urządzeniu.</p>
+                            <p>To control Spotify, start playback on any device.</p>
                         </div>
 
-                        <p>Jeśli to widzisz to znaczy, że pomyślnie udało ci się połączyć konto Spotify!</p>
+                        <p>If you see this, it means you successfully connected your Spotify account!</p>
                     </div>
 
                     <div class="category" id="linkSettings">
@@ -305,39 +305,37 @@
                             <span class="material-symbols-outlined" id="closeLoginAlert"
                                 onclick="$(this).parent().removeClass('active')">close</span>
                             <div class="qrBlur" id="linkQrBlur">
-                                <span>Kontynuuj logowanie na telefonie</span>
-                                <button onclick="$(this).parent().removeClass('active')">Pokaż kod QR</button>
+                                <span>Continue login on phone</span>
+                                <button onclick="$(this).parent().removeClass('active')">Show QR code</button>
                             </div>
-                            <p>Zeskanuj poniższy kod komórką, aby połączyć konto.</p>
+                            <p>Scan the code below with your phone to connect your account.</p>
                             <img src="" id="linkLoginQRCode">
                         </div>
 
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Integracje</h3>
-                                <p class="setting-description">Apollo Link umożliwia łączenie kont w codziennych
-                                    serwisach z Apollo, by
-                                    korzystać z wygodnych opcji.</p>
+                                <h3 class="setting-title">Integrations</h3>
+                                <p class="setting-description">Apollo Link enables connecting accounts in everyday services with Apollo to use convenient options.</p>
                             </div>
                             <div class="link-list">
                                 <div class="el active">
                                     <img src="./assets/img/spotify.png" alt="Spotify">
                                     <div>
                                         <span class="title">Spotify</span>
-                                        <span>Sterowanie graficzne i głosowe muzyką</span>
+                                        <span>Graphical and voice music control</span>
                                     </div>
                                     <button class="button" id="spotifyLinkButton">
-                                        Połącz
+                                        Connect
                                     </button>
                                 </div>
                                 <div class="el active">
                                     <img src="./assets/img/g.png" alt="Spotify">
                                     <div>
                                         <span class="title">Google</span>
-                                        <span>Kalendarz</span>
+                                        <span>Calendar</span>
                                     </div>
                                     <button class="button" id="googleLinkButton">
-                                        Połącz
+                                        Connect
                                     </button>
                                 </div>
                             </div>
@@ -346,45 +344,45 @@
                      <div class="category" id="deviceinfoSettings">
                         <div class="setting-row">
                             <div class="setting-text">
-                                <h3 class="setting-title">Informacje o urządzeniu</h3>
-                                <p class="setting-description">Ta sekcja zawiera informacje o urządzeniu, wersji oprogramowania oraz sieci.</p>
+                                <h3 class="setting-title">Device information</h3>
+                                <p class="setting-description">This section contains information about the device, software version and network.</p>
                             </div>
                             <div class="info-list">
                                 <div class="info-section">
                                     <div class="info-row">
-                                        <span class="info-label">Wersja systemu:</span>
-                                        <span class="info-value" id="systemVersion">Ładowanie...</span>
+                                        <span class="info-label">System version:</span>
+                                        <span class="info-value" id="systemVersion">Loading...</span>
                                     </div>
                                     <div class="info-row">
-                                        <span class="info-value" id="buildInfo">Ładowanie...</span>
-                                    </div>
-                                </div>
-
-                                <div class="info-section">
-                                    <h3>Specyfikacja techniczna</h3>
-                                    <div class="info-row">
-                                        <span class="info-label">Procesor:</span>
-                                        <span class="info-value" id="cpuInfo">Ładowanie...</span>
-                                    </div>
-                                    <div class="info-row">
-                                        <span class="info-label">Pamięć RAM:</span>
-                                        <span class="info-value" id="totalMemory">Ładowanie...</span>
+                                        <span class="info-value" id="buildInfo">Loading...</span>
                                     </div>
                                 </div>
 
                                 <div class="info-section">
-                                    <h3>Sieć i łączność</h3>
+                                    <h3>Technical specifications</h3>
                                     <div class="info-row">
-                                        <span class="info-label">Aktywna sieć:</span>
-                                        <span class="info-value" id="activeNetwork">Ładowanie...</span>
+                                        <span class="info-label">Processor:</span>
+                                        <span class="info-value" id="cpuInfo">Loading...</span>
                                     </div>
                                     <div class="info-row">
-                                        <span class="info-label">Adres IP:</span>
-                                        <span class="info-value" id="deviceIpAddress">Ładowanie...</span>
+                                        <span class="info-label">RAM memory:</span>
+                                        <span class="info-value" id="totalMemory">Loading...</span>
+                                    </div>
+                                </div>
+
+                                <div class="info-section">
+                                    <h3>Network and connectivity</h3>
+                                    <div class="info-row">
+                                        <span class="info-label">Active network:</span>
+                                        <span class="info-value" id="activeNetwork">Loading...</span>
                                     </div>
                                     <div class="info-row">
-                                        <span class="info-label">Adres MAC:</span>
-                                        <span class="info-value" id="macAddress">Ładowanie...</span>
+                                        <span class="info-label">IP address:</span>
+                                        <span class="info-value" id="deviceIpAddress">Loading...</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">MAC address:</span>
+                                        <span class="info-value" id="macAddress">Loading...</span>
                                     </div>
                                 </div>
                             </div>
@@ -413,7 +411,7 @@
                         <div class="search-row">
                             <div class="search-input-container">
                                 <span class="material-symbols-outlined">search</span>
-                                <input type="text" id="newsSearchInput" placeholder="Szukaj wiadomości...">
+                                <input type="text" id="newsSearchInput" placeholder="Search news...">
                                 <button id="clearNewsSearch" style="display: none;">
                                     <span class="material-symbols-outlined">close</span>
                                 </button>
@@ -424,16 +422,16 @@
                         </div>
                         
                         <div class="filter-row">
-                            <button class="news-filter-btn active" data-filter="all">Wszystkie</button>
+                            <button class="news-filter-btn active" data-filter="all">All</button>
                             <button class="news-filter-btn" data-filter="tech_science">Tech</button>
-                            <button class="news-filter-btn" data-filter="world">Świat</button>
-                            <button class="news-filter-btn" data-filter="business">Biznes</button>
-                            <button class="news-filter-btn" data-filter="sport">Sport</button>
+                            <button class="news-filter-btn" data-filter="world">World</button>
+                            <button class="news-filter-btn" data-filter="business">Business</button>
+                            <button class="news-filter-btn" data-filter="sport">Sports</button>
                         </div>
                     </div>
 
                     <!-- Compact Status -->
-                    <div class="news-count">Ładowanie...</div>
+                    <div class="news-count">Loading...</div>
 
                     <!-- News Feed -->
                     <div class="news-feed">
@@ -450,19 +448,19 @@
                         <div class="mobi-filters">
                             <div class="filter-item active" data-filter="all">
                                 <span class="material-symbols-outlined">view_agenda</span>
-                                <span>Wszystkie</span>
+                                <span>All</span>
                             </div>
                             <div class="filter-item" data-filter="today">
                                 <span class="material-symbols-outlined">today</span>
-                                <span>Dzisiaj</span>
+                                <span>Today</span>
                             </div>
                             <div class="filter-item" data-filter="week">
                                 <span class="material-symbols-outlined">date_range</span>
-                                <span>Tydzień</span>
+                                <span>Week</span>
                             </div>
                             <div class="filter-item" data-filter="tests">
                                 <span class="material-symbols-outlined">quiz</span>
-                                <span>Testy</span>
+                                <span>Tests</span>
                             </div>
                         </div>
                     </div>
@@ -569,10 +567,10 @@
                 <div class="widget sm" id="spotify">
                     <div class="spotifyLoginAlert active"
                         onclick="openApp('settings', $(this).parent().get(0));animateContentChange('linkSettings')">
-                        <p>Stuknij aby połączyć Spotify w ustawieniach.</p>
+                        <p>Tap to connect Spotify in settings.</p>
                     </div>
                     <div class="spotifyDeviceAlert active">
-                        <p>Aby sterować Spotify, uruchom odtwarzanie.</p>
+                        <p>To control Spotify, start playback.</p>
                     </div>
 
                     <div class="main-content">
@@ -598,13 +596,13 @@
                 </div>
                 <div class="widget sm" id="mobidziennik" onclick="openApp('mobidziennikApp', this)">
                     <div class="mobiLoginAlert active">
-                        <p>Ładowanie wydarzeń z mobiDziennka...</p>
+                        <p>Loading events from mobiJournal...</p>
                     </div>
 
                     <div class="widget-header">
                         <div class="widget-title">
-                            <h3>mobiDziennik</h3>
-                            <span class="next-event-indicator">Następne wydarzenie</span>
+                            <h3>mobiJournal</h3>
+                            <span class="next-event-indicator">Next event</span>
                         </div>
                         <span class="event-date"></span>
                     </div>
@@ -619,7 +617,7 @@
                 <div class="widget xl" id="calendar">
                     <div class="googleLoginAlert active"
                         onclick="openApp('settings', $(this).parent().get(0));animateContentChange('linkSettings')">
-                        <p>Stuknij aby połączyć Google w ustawieniach.</p>
+                        <p>Tap to connect Google in settings.</p>
                     </div>
 
                     <div id="calendar-error" class="calendar-error"></div>
@@ -660,11 +658,11 @@
 
                 <div class="widget lg" id="rss" onclick="openApp('newsApp', this)">
                     <div class="rssLoginAlert active">
-                        <p>Ładowanie wiadomości RSS...</p>
+                        <p>Loading RSS news...</p>
                     </div>
 
                     <div class="header">
-                        <h2>Aktualności</h2>
+                        <h2>News</h2>
                         <span class="source"></span>
                     </div>
 
@@ -693,20 +691,20 @@
                     </div>
 
                     <div class="header">
-                        <h2>Giełda</h2>
+                        <h2>Stock Market</h2>
                     </div>
                 </div>
             </div>
             <div class="col" id="apolloScreen">
                 <!-- Idle Screen -->
                 <div class="screen idleScreen active">
-                    <span class="prompt-intro">Powiedz...</span>
+                    <span class="prompt-intro">Say...</span>
                     <span id="examplePrompt" class="example-prompt"></span>
                 </div>
 
                 <!-- Combined Listening and Processing Screen -->
                 <div class="screen listeningProcessingScreen">
-                    <span class="prompt-intro">Słucham...</span>
+                    <span class="prompt-intro">Listening...</span>
                     <p id="transcript" class="transcript"></p>
                     <div class="listening-processing-indicator">
                         <div class="circle"></div>
@@ -731,7 +729,7 @@
 
                 <!-- Realtime conversation in progress screen -->
                 <div class="screen realtimeScreen">
-                    <span class="prompt-intro">Rozmowa realtime...</span>
+                    <span class="prompt-intro">Realtime conversation...</span>
                     <p id="transcript" class="transcript"></p>
                     <div class="realtime-indicator">
                         <div class="circle"></div>
